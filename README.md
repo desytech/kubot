@@ -1,0 +1,2 @@
+# kubot
+Lendbot for Kucoin
