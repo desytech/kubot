@@ -1,0 +1,10 @@
+[api]
+api_key = key
+api_secret = secret
+api_passphrase = passphrase
+
+[bot]
+correction = 0.00012
+default_interest = 0.001
+minimum_rate = 0.0006
+charge = 0.00003
