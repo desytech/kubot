@@ -52,5 +52,10 @@ class Config(object):
     def charge(self):
         return self.__config['bot'].getfloat('charge')
 
+    @property
+    @property_wrapper
+    def interval(self):
+        return self.__config['bot'].getint('interval')
+
 
 config = Config()
