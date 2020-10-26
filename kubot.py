@@ -26,7 +26,7 @@ class Scheduler(object):
             available = int(float(account['available']))
             if available:
                 if min_int_rate >= config.minimum_rate:
-                    rate = min_int_rate + config.charge
+                    rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
                     rate = config.minimum_rate
                 order_id = self.__client.create_lend_order('USDT', str(available), str(rate), 28)
