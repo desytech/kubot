@@ -31,6 +31,8 @@ class Scheduler(object):
                     rate = config.minimum_rate
                 order_id = self.__client.create_lend_order('USDT', str(available), str(rate), 28)
                 Logger().logger.info("Create Lend Order: %s, Amount: %s, Rate: %s", order_id, available, rate)
+            else:
+                Logger().logger.info("Insufficient Amount on Main Account: %s", available)
 
     def check_active_loans(self, min_int_rate):
         active_orders = self.__client.get_active_order(currency="USDT")
