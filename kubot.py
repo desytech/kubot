@@ -1,4 +1,6 @@
 import sched, time
+import socket
+import requests
 
 from kucoin.client import Margin, User
 from config.config import config
@@ -15,10 +17,13 @@ class Scheduler(object):
 
     def schedule_checks(self, interval):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
-        min_int_rate = self.get_min_daily_interest_rate()
-        self.check_active_loans(min_int_rate)
-        self.lend_loans(min_int_rate)
-
+        try:
+            min_int_rate = self.get_min_daily_interest_rate()
+            self.check_active_loans(min_int_rate)
+            self.lend_loans(min_int_rate)
+        except (socket.timeout, requests.exceptions.Timeout) as e:
+            Logger().logger.error("Transport Exception occured: %s", e)
+        
     def lend_loans(self, min_int_rate):
         account_list = self.__user.get_account_list('USDT', 'main')
         account = next((x for x in account_list if x['currency'] == 'USDT'), None)
