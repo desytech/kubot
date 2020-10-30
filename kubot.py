@@ -23,7 +23,7 @@ class Scheduler(object):
             self.lend_loans(min_int_rate)
         except (socket.timeout, requests.exceptions.Timeout) as e:
             Logger().logger.error("Transport Exception occured: %s", e)
-        
+
     def lend_loans(self, min_int_rate):
         account_list = self.__user.get_account_list('USDT', 'main')
         account = next((x for x in account_list if x['currency'] == 'USDT'), None)
@@ -43,7 +43,7 @@ class Scheduler(object):
         active_orders = self.__client.get_active_order(currency="USDT")
         for a in active_orders.get('items'):
             daily_int_rate = float(a['dailyIntRate'])
-            if abs(daily_int_rate - min_int_rate) >= config.correction:
+            if abs(daily_int_rate - min_int_rate) >= config.correction and not (daily_int_rate == config.minimum_rate and min_int_rate - config.correction <= config.minimum_rate):
                 self.__client.cancel_lend_order(a['orderId'])
                 Logger().logger.info("Cancel Lend Order: Amount: %s, DailyIntRate: %s, "
                                      "MinIntRate: %s, DiffRate: %s, Correction: %s",
