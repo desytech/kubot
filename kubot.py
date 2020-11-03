@@ -43,7 +43,6 @@ class Scheduler(object):
                 Logger().logger.info(info)
                 self.__pushover.send_message(info, title="Create Lend Order")
             else:
-                self.__pushover.send_message("Just a Test", title="Just a Test")
                 Logger().logger.info("Insufficient Amount on Main Account: %s", available)
 
     def check_active_loans(self, min_int_rate):
