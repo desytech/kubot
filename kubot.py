@@ -53,7 +53,6 @@ class Scheduler(object):
                                      abs(daily_int_rate - min_int_rate),
                                      config.correction
                                      )
-                self.lend_loans(min_int_rate)
 
     def get_min_daily_interest_rate(self):
         lending_market = self.__client.get_lending_market("USDT")
