@@ -9,3 +9,7 @@ default_interest = 0.001
 minimum_rate = 0.0006
 charge = 0.00003
 interval = 300
+
+[pushover]
+user_key = user_key
+api_token = api_token

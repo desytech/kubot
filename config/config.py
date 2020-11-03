@@ -57,5 +57,14 @@ class Config(object):
     def interval(self):
         return self.__config['bot'].getint('interval')
 
+    @property
+    @property_wrapper
+    def user_key(self):
+        return self.__config['pushover']['user_key']
+
+    @property
+    @property_wrapper
+    def api_token(self):
+        return self.__config['pushover']['api_token']
 
 config = Config()
