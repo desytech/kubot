@@ -70,12 +70,11 @@ class Scheduler(object):
     def check_active_lendings(self):
         active_list = self.__client.get_active_list(pageSize=50)
         if active_list and active_list['items']:
-            utc_now = datetime.utcnow().time()
+            utc_now = datetime.utcnow()
             dt = timedelta(seconds=config.interval).total_seconds()
             for a in active_list['items']:
                 maturity_timestamp = a['maturityTime'] / 1000
-                time_diff = abs((datetime.combine(date.min, utc_now) - datetime.combine(date.min, datetime.utcfromtimestamp(maturity_timestamp).time())).total_seconds())
-                print(dt, time_diff, time_diff <= dt)
+                time_diff = (utc_now - (datetime.utcfromtimestamp(maturity_timestamp) - timedelta(a['term']))).total_seconds()
                 if time_diff <= dt:
                     maturity_date = datetime.fromtimestamp(maturity_timestamp).strftime("%Y-%m-%d %H:%M:%S")
                     self.__pushover.send_message("Create Active Lending: Amount: {}, DailyIntRate: {}, MaturityDate: {}, AccruedInterest: {}".format(
