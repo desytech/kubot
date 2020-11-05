@@ -1,5 +1,4 @@
 config/config
 venv
 .idea
-fixtures.py
 __pycache__

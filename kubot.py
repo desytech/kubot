@@ -5,7 +5,7 @@ import requests
 from kucoin.client import Margin, User
 from config.config import config
 from logger import Logger
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from pushover import Client
 
 
