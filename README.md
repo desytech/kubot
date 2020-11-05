@@ -1,7 +1,7 @@
 # Kubot
 Lendbot for Kucoin with Pushover Support
 
-https://github.com/desy83/kubot/workflows/Kubot/badge.svg
+![Kubot](https://github.com/desy83/kubot/workflows/Kubot/badge.svg)
 
 # Preparation
 - copy `config/config.demo` to `config/config`
