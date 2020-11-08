@@ -59,6 +59,11 @@ class Config(object):
 
     @property
     @property_wrapper
+    def pushover_enable(self):
+        return self.__config['pushover']['enable']
+
+    @property
+    @property_wrapper
     def user_key(self):
         return self.__config['pushover']['user_key']
 
