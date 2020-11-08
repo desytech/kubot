@@ -11,7 +11,7 @@ class Api(Notifier):
     @property
     def api(self):
         if self.client == None:
-            self.client = Client(user_key, api_token=api_token)
+            self.client = Client(self.user_key, api_token=self.api_token)
         return self.client
 
     def send_message(self, message, title=None):
