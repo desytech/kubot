@@ -15,6 +15,7 @@ class Scheduler(object):
         self.__user = User(config.api_key, config.api_secret, config.api_passphrase)
         self.__pushover = Client(config.user_key, api_token=config.api_token)
         self.__scheduler = sched.scheduler(time.time, time.sleep)
+        self.__minimum_rate = config.minimum_rate
         self.schedule_checks(config.interval)
         self.__scheduler.run()
 
@@ -22,6 +23,9 @@ class Scheduler(object):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
         try:
             min_int_rate = self.get_min_daily_interest_rate()
+            min_int_rate_charge = min_int_rate + config.charge
+            if abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
+                self.__minimum_rate = min_int_rate_charge
             self.check_active_loans(min_int_rate)
             self.lend_loans(min_int_rate)
             self.check_active_lendings()
@@ -34,10 +38,10 @@ class Scheduler(object):
         if account:
             available = int(float(account['available']))
             if available:
-                if min_int_rate >= config.minimum_rate:
+                if min_int_rate >= self.__minimum_rate:
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
-                    rate = config.minimum_rate
+                    rate = self.__minimum_rate
                 order_id = self.__client.create_lend_order('USDT', str(available), str(rate), 28)
                 info = "Create Lend Order: %s, Amount: %s, Rate: %s" % (order_id, available, rate)
                 Logger().logger.info(info)
@@ -48,13 +52,16 @@ class Scheduler(object):
     def check_active_loans(self, min_int_rate):
         active_orders = self.__client.get_active_order(currency="USDT")
         items = active_orders.get('items')
+
         for a in items:
             daily_int_rate = float(a['dailyIntRate'])
+
             if daily_int_rate >= min_int_rate:
                 cancel_lend_order = abs(daily_int_rate - min_int_rate) >= config.correction
             else:
                 cancel_lend_order = True
-            if len(items) > 1 or cancel_lend_order and not (daily_int_rate == config.minimum_rate and min_int_rate <= config.minimum_rate):
+
+            if len(items) > 1 or cancel_lend_order and not (daily_int_rate == self.__minimum_rate and min_int_rate <= self.__minimum_rate):
                 self.__client.cancel_lend_order(a['orderId'])
                 Logger().logger.info("Cancel Lend Order: Amount: %s, DailyIntRate: %s, "
                                      "MinIntRate: %s, DiffRate: %s, Correction: %s",
