@@ -23,7 +23,7 @@ class Scheduler(object):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
         try:
             min_int_rate = self.get_min_daily_interest_rate()
-            min_int_rate_charge = min_int_rate + config.charge
+            min_int_rate_charge = float(format(min_int_rate + config.charge, '.5f'))
             if abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
                 self.__minimum_rate = min_int_rate_charge
             self.check_active_loans(min_int_rate)
