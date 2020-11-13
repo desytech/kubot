@@ -27,6 +27,7 @@ class Scheduler(object):
             self.__notifiers.append(n)
         self.__lendable_coins = coins
         self.__scheduler = sched.scheduler(time.time, time.sleep)
+        self.__minimum_rate = config.minimum_rate
         self.schedule_checks(config.interval)
 
     def push_message(self, message, title=None):
@@ -38,6 +39,9 @@ class Scheduler(object):
         for coin in self.__lendable_coins:
             try:
                 min_int_rate = self.get_min_daily_interest_rate(coin)
+                min_int_rate_charge = float(format(min_int_rate + config.charge, '.5f'))
+                if abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
+                    self.__minimum_rate = min_int_rate_charge
                 self.check_active_loans(coin, min_int_rate)
                 self.lend_loans(coin, min_int_rate)
                 self.check_active_lendings(coin)
@@ -57,31 +61,29 @@ class Scheduler(object):
         if account:
             available = int(float(account['available']))
             if available and available >= coin.precision:
-                if min_int_rate >= config.minimum_rate:
+                if min_int_rate >= self.__minimum_rate:
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
-                    rate = config.minimum_rate
-                try:
-                    available = self.trim_to_precision(available, coin.precision)
-                    Logger().logger.info("creating order: {}: available: {} rate: {}".format(coin.symbol, str(available), str(rate)))
-                    order_id = self.__client.create_lend_order(coin.symbol, str(available), str(rate), 28)
-                    info = "Created Lend Order: %s, Amount: %s, Rate: %s" % (order_id, available, rate)
-                    Logger().logger.info(info)
-                    self.push_message(info, title="Create Lend Order")
-                except Exception as e:
-                    Logger().logger.error("failed to create lend order: %s", e)
+                    rate = self.__minimum_rate
+                available = self.trim_to_precision(available, coin.precision)
+                order_id = self.__client.create_lend_order(coin.symbol, str(available), str(rate), 28)
+                self.push_message("Create Lend Order: %s, Amount: %s, Rate: %s" % (order_id, available, rate),
+                    title="Create Lend Order")
             else:
                 Logger().logger.info("Insufficient Amount on Main Account: %s", available)
 
     def check_active_loans(self, coin, min_int_rate):
         active_orders = self.__client.get_active_order(currency=coin.symbol)
-        for a in active_orders.get('items'):
+        items = active_orders.get('items')
+        for a in items:
             daily_int_rate = float(a['dailyIntRate'])
+
             if daily_int_rate >= min_int_rate:
                 cancel_lend_order = abs(daily_int_rate - min_int_rate) >= config.correction
             else:
                 cancel_lend_order = True
-            if len(items) > 1 or cancel_lend_order and not (daily_int_rate == config.minimum_rate and min_int_rate <= config.minimum_rate):
+
+            if len(items) > 1 or cancel_lend_order and not (daily_int_rate == self.__minimum_rate and min_int_rate <= self.__minimum_rate):
                 self.__client.cancel_lend_order(a['orderId'])
                 Logger().logger.info("Cancel Lend Order: Amount: %s, DailyIntRate: %s, "
                                      "MinIntRate: %s, DiffRate: %s, Correction: %s",
