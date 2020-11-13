@@ -1,6 +1,8 @@
+import sys
 import sched, time
 import socket
 import requests
+import signal
 
 from kucoin.client import Margin, User
 from config.config import config
@@ -14,17 +16,22 @@ from coin import coin
 
 class Scheduler(object):
 
-    def __init__(self, coins=[], notificationapi=None):
+    def __init__(self, coins=[], notifiers=[]):
         self.__client = Margin(config.api_key, config.api_secret, config.api_passphrase)
         self.__user = User(config.api_key, config.api_secret, config.api_passphrase)
-        self.__notify = notificationapi if isinstance(notificationapi, Notifier) else None
+        self.__notifiers = []
+        for n in notifiers:
+            if not isinstance(n, Notifier):
+                Logger().logger.warning("could not add notifier: %s" % n)
+                continue
+            self.__notifiers.append(n)
         self.__lendable_coins = coins
         self.__scheduler = sched.scheduler(time.time, time.sleep)
         self.schedule_checks(config.interval)
-        self.__scheduler.run()
 
     def push_message(self, message, title=None):
-        self.__notify.send_message(message, title=title)
+        for notifier in self.__notifiers:
+            notifier.send_message(message, title=title)
 
     def schedule_checks(self, interval):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
@@ -37,12 +44,15 @@ class Scheduler(object):
             except (socket.timeout, requests.exceptions.Timeout) as e:
                 Logger().logger.error("Transport Exception occured: %s", e)
 
+    def run(self):
+        self.__scheduler.run()
+
     def trim_to_precision(self, amount, precision):
         return amount - (amount % precision)
 
     def lend_loans(self, coin, min_int_rate):
         account_list = self.__user.get_account_list(coin.symbol, 'main')
-        print(account_list)
+        Logger().logger.info("account_list: %s", account_list)
         account = next((x for x in account_list if x['currency'] == coin.symbol), None)
         if account:
             available = int(float(account['available']))
@@ -107,13 +117,24 @@ class Scheduler(object):
                     , title="Create Active Lending")
 
 
+def set_signal_handler():
+    def sigint_handler(signum, frame):
+        print('catched sigint: user abort ... bye')
+        sys.exit(0)
+    signal.signal(signal.SIGINT, sigint_handler)
+
+
 def main():
-    notifier = ConsoleNotifier()
-    if config.pushover_enable == "yes":
-        notifier = PushoverNotifier(config.user_key, config.api_token)
+    set_signal_handler()
 
     lendable_coins = coin.All()
-    Scheduler(coins=lendable_coins, notificationapi=notifier)
+
+    notifiers = [
+        ConsoleNotifier(),
+        PushoverNotifier(config.user_key, config.api_token),
+    ]
+
+    Scheduler(coins=lendable_coins, notifiers=notifiers).run()
 
 
 if __name__ == "__main__":
