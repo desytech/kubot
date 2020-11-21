@@ -74,6 +74,7 @@ class Scheduler(object):
 
     def get_min_daily_interest_rate(self):
         lending_market = self.__client.get_lending_market("USDT")
+        lending_market = lending_market['data'] if 'data' in lending_market else lending_market
         if lending_market:
             return float(lending_market[0]['dailyIntRate'])
         else:
