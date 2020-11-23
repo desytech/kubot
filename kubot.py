@@ -30,7 +30,10 @@ class Scheduler(object):
             self.lend_loans(min_int_rate)
             self.check_active_lendings()
         except (socket.timeout, requests.exceptions.Timeout) as e:
-            Logger().logger.error("Transport Exception occured: %s", e)
+            Logger().logger.error("Transport Exception occurred: %s", e)
+        except Exception as e:
+            Logger().logger.error("Generic Error occurred: %s", e)
+
 
     def lend_loans(self, min_int_rate):
         account_list = self.__user.get_account_list('USDT', 'main')
