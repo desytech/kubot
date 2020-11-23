@@ -1,5 +1,15 @@
 import os
 from configparser import ConfigParser, ExtendedInterpolation
+import const
+
+
+def optional_wrapper(arg):
+    def inner_decorator(f):
+        def wrapped(*args, **kwargs):
+            response = f(*args, **kwargs)
+            return arg if response is None else response
+        return wrapped
+    return inner_decorator
 
 
 def property_wrapper(func):
@@ -44,6 +54,7 @@ class Config(object):
 
     @property
     @property_wrapper
+    @optional_wrapper(const.DEFAULT_MIN_RATE)
     def minimum_rate(self):
         return self.__config['bot'].getfloat('minimum_rate')
 

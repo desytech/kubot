@@ -7,6 +7,7 @@ from config.config import config
 from logger import Logger
 from datetime import datetime, timedelta
 from pushover import Client
+import const
 
 
 class Scheduler(object):
@@ -24,7 +25,9 @@ class Scheduler(object):
         try:
             min_int_rate = self.get_min_daily_interest_rate()
             min_int_rate_charge = float(format(min_int_rate + config.charge, '.5f'))
-            if abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
+            if min_int_rate_charge <= config.minimum_rate:
+                self.__minimum_rate = config.minimum_rate
+            elif self.__minimum_rate == const.DEFAULT_MIN_RATE or abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
                 self.__minimum_rate = min_int_rate_charge
             self.check_active_loans(min_int_rate)
             self.lend_loans(min_int_rate)
@@ -33,7 +36,6 @@ class Scheduler(object):
             Logger().logger.error("Transport Exception occurred: %s", e)
         except Exception as e:
             Logger().logger.error("Generic Error occurred: %s", e)
-
 
     def lend_loans(self, min_int_rate):
         account_list = self.__user.get_account_list('USDT', 'main')

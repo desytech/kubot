@@ -1,0 +1,1 @@
+DEFAULT_MIN_RATE = 0.0
