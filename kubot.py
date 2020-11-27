@@ -106,16 +106,7 @@ class Scheduler(object):
                     , title="Create Active Lending")
 
 
-def set_signal_handler():
-    def sigint_handler(signum, frame):
-        print('catched sigint: user abort ... bye')
-        sys.exit(0)
-    signal.signal(signal.SIGINT, sigint_handler)
-
-
 def main():
-    set_signal_handler()
-
     notifiers = [
         ConsoleNotifier(),
         PushoverNotifier(config.user_key, config.api_token),
