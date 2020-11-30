@@ -7,10 +7,13 @@ help::
 	@echo "make build - build kubot docker image."
 build:
 	docker build --tag ${image}:${version} .
+	docker image prune -f
 
 help::
 	@echo "make run-d - run kubot docker image detached."
 run-d:
+	docker stop kubot || true
+	docker rm kubot || true
 	docker run -d -v `pwd`/config/config:/app/config/config --name kubot ${image}:${version}
 
 help::

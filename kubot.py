@@ -54,8 +54,7 @@ class Scheduler(object):
                 else:
                     rate = self.__minimum_rate
                 order_id = self.__client.create_lend_order("USDT", str(available), str(rate), 28)
-                self.push_message("%s, Amount: %s, Rate: %s" % (order_id, available, rate),
-                    title="Create Lend Order")
+                self.push_message("%s, Amount: %s, Rate: %s" % (order_id, available, rate), title="Create Lend Order")
             else:
                 Logger().logger.info("Insufficient Amount on Main Account: %s", available)
 
