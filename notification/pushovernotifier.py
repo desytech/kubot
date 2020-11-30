@@ -3,6 +3,7 @@ import re
 import const
 from notification.notify import Notifier
 from pushover import Client
+from logger import Logger
 
 
 class Api(Notifier):
@@ -23,5 +24,8 @@ class Api(Notifier):
         return self.client
 
     def send_message(self, message, title=None):
-        self.api.send_message(message, title=title)
+        try:
+            self.api.send_message(message, title=title)
+        except Exception as e:
+            Logger().logger.error("Pushover send message error: %s", e)
 

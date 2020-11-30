@@ -16,9 +16,7 @@ class Scheduler(object):
     def __init__(self, notifiers):
         self.__client = Margin(config.api_key, config.api_secret, config.api_passphrase)
         self.__user = User(config.api_key, config.api_secret, config.api_passphrase)
-        self.__notifiers = []
-        for n in notifiers:
-            self.__notifiers.append(n)
+        self.__notifiers = notifiers
         self.__scheduler = sched.scheduler(time.time, time.sleep)
         self.__minimum_rate = config.minimum_rate
         self.schedule_checks(config.interval)

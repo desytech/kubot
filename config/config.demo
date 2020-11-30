@@ -11,6 +11,5 @@ charge = 0.00005
 interval = 300
 
 [pushover]
-enable = yes
 user_key = user_key
 api_token = api_token
