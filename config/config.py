@@ -71,11 +71,12 @@ class Config(object):
     @property
     @property_wrapper
     def user_key(self):
-        return self.__config['pushover']['user_key']
+        return self.__config['pushover'].get('user_key')
 
     @property
     @property_wrapper
     def api_token(self):
-        return self.__config['pushover']['api_token']
+        return self.__config['pushover'].get('api_token')
+
 
 config = Config()

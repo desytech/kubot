@@ -2,23 +2,29 @@ import sched, time
 import socket
 import requests
 
+import const
 from kucoin.client import Margin, User
 from config.config import config
 from logger import Logger
 from datetime import datetime, timedelta
-from pushover import Client
-import const
+from notification.pushovernotifier import Api as PushoverNotifier
+from notification.consolenotifier import Api as ConsoleNotifier
 
 
 class Scheduler(object):
-    def __init__(self):
+
+    def __init__(self, notifiers):
         self.__client = Margin(config.api_key, config.api_secret, config.api_passphrase)
         self.__user = User(config.api_key, config.api_secret, config.api_passphrase)
-        self.__pushover = Client(config.user_key, api_token=config.api_token)
+        self.__notifiers = notifiers
         self.__scheduler = sched.scheduler(time.time, time.sleep)
         self.__minimum_rate = config.minimum_rate
         self.schedule_checks(config.interval)
         self.__scheduler.run()
+
+    def push_message(self, message, title=None):
+        for notifier in self.__notifiers:
+            notifier.send_message(message, title=title)
 
     def schedule_checks(self, interval):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
@@ -47,10 +53,9 @@ class Scheduler(object):
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
                     rate = self.__minimum_rate
-                order_id = self.__client.create_lend_order('USDT', str(available), str(rate), 28)
-                info = "Create Lend Order: %s, Amount: %s, Rate: %s" % (order_id, available, rate)
-                Logger().logger.info(info)
-                self.__pushover.send_message(info, title="Create Lend Order")
+                order_id = self.__client.create_lend_order("USDT", str(available), str(rate), 28)
+                self.push_message("%s, Amount: %s, Rate: %s" % (order_id, available, rate),
+                    title="Create Lend Order")
             else:
                 Logger().logger.info("Insufficient Amount on Main Account: %s", available)
 
@@ -95,7 +100,7 @@ class Scheduler(object):
                 time_diff = (utc_now - (datetime.utcfromtimestamp(maturity_timestamp) - timedelta(a['term']))).total_seconds()
                 if time_diff <= dt:
                     maturity_date = datetime.fromtimestamp(maturity_timestamp).strftime("%Y-%m-%d %H:%M:%S")
-                    self.__pushover.send_message("Create Active Lending: Amount: {}, DailyIntRate: {}, MaturityDate: {}, AccruedInterest: {}".format(
+                    self.push_message("Amount: {}, DailyIntRate: {}, MaturityDate: {}, AccruedInterest: {}".format(
                         a['size'],
                         a['dailyIntRate'],
                         maturity_date,
@@ -104,7 +109,17 @@ class Scheduler(object):
 
 
 def main():
-    Scheduler()
+    notifiers = [
+        ConsoleNotifier(),
+    ]
+
+    if PushoverNotifier.is_valid_key(config.user_key) and PushoverNotifier.is_valid_key(config.api_token):
+        try:
+            notifiers.append(PushoverNotifier(config.user_key, config.api_token))
+        except Exception as e:
+            Logger().logger.error("Error occurred initializing Pushover notifier: %s", e)
+
+    Scheduler(notifiers=notifiers)
 
 
 if __name__ == "__main__":
