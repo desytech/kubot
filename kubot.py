@@ -48,7 +48,7 @@ class Scheduler(object):
         account = next((x for x in account_list if x['currency'] == 'USDT'), None)
         if account:
             available = int(float(account['available']))
-            if available:
+            if const.MIN_LEND_SIZE <= available <= const.MAX_LEND_SIZE:
                 if min_int_rate >= self.__minimum_rate:
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
