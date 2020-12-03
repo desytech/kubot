@@ -4,7 +4,7 @@ api_secret = secret
 api_passphrase = passphrase
 
 [bot]
-correction = 0.0005
+correction = 0.00005
 default_interest = 0.001
 minimum_rate = 0.0005
 charge = 0.00005
