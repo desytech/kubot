@@ -9,6 +9,7 @@ from logger import Logger
 from datetime import datetime, timedelta
 from notification.pushovernotifier import Api as PushoverNotifier
 from notification.consolenotifier import Api as ConsoleNotifier
+from helper import convert_float_to_percentage
 
 
 class Scheduler(object):
@@ -54,7 +55,8 @@ class Scheduler(object):
                 else:
                     rate = self.__minimum_rate
                 order_id = self.__client.create_lend_order("USDT", str(available), str(rate), 28)
-                self.push_message("%s, Amount: %s, Rate: %s" % (order_id, available, rate), title="Create Lend Order")
+                self.push_message("OrderId: %s, Amount: %s, Rate: %s" % (order_id['orderId'], available, convert_float_to_percentage(rate)),
+                                  title="Create Lend Order")
             else:
                 Logger().logger.info("Insufficient Amount on Main Account: %s", available)
 
@@ -91,6 +93,7 @@ class Scheduler(object):
 
     def check_active_lendings(self):
         active_list = self.__client.get_active_list(pageSize=50)
+        print(active_list)
         if active_list and active_list['items']:
             utc_now = datetime.utcnow()
             dt = timedelta(seconds=config.interval).total_seconds()
@@ -101,7 +104,7 @@ class Scheduler(object):
                     maturity_date = datetime.fromtimestamp(maturity_timestamp).strftime("%Y-%m-%d %H:%M:%S")
                     self.push_message("Amount: {}, DailyIntRate: {}, MaturityDate: {}, AccruedInterest: {}".format(
                         a['size'],
-                        a['dailyIntRate'],
+                        convert_float_to_percentage(['dailyIntRate']),
                         maturity_date,
                         a['accruedInterest'])
                     , title="Create Active Lending")

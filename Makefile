@@ -25,3 +25,8 @@ help::
 	@echo "make venv - bootstrap python3 venv."
 venv:
 	python3 -m venv venv
+
+help::
+	@echo "make test - run pytest suite."
+test:
+	PYTHONPATH=`pwd` pytest
