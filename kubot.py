@@ -93,7 +93,6 @@ class Scheduler(object):
 
     def check_active_lendings(self):
         active_list = self.__client.get_active_list(pageSize=50)
-        print(active_list)
         if active_list and active_list['items']:
             utc_now = datetime.utcnow()
             dt = timedelta(seconds=config.interval).total_seconds()
