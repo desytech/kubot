@@ -3,23 +3,17 @@ from configparser import ConfigParser, ExtendedInterpolation
 import const
 
 
-def optional_wrapper(arg):
+def property_wrapper(default=None):
     def inner_decorator(f):
         def wrapped(*args, **kwargs):
-            response = f(*args, **kwargs)
-            return arg if response is None else response
+            try:
+                response = f(*args, **kwargs)
+                return default if response is None else response
+            except Exception as e:
+                print("Error reading configuration:", e)
+                exit(2)
         return wrapped
     return inner_decorator
-
-
-def property_wrapper(func):
-    def function_wrapper(x):
-        try:
-            return func(x)
-        except Exception as e:
-            print("Error reading configuration:", e)
-            exit(2)
-    return function_wrapper
 
 
 class Config(object):
@@ -28,53 +22,52 @@ class Config(object):
         self.__config.read(os.path.join(os.path.dirname(__file__), 'config'))
 
     @property
-    @property_wrapper
+    @property_wrapper()
     def api_key(self):
         return self.__config['api']['api_key']
 
     @property
-    @property_wrapper
+    @property_wrapper()
     def api_secret(self):
         return self.__config['api']['api_secret']
 
     @property
-    @property_wrapper
+    @property_wrapper()
     def api_passphrase(self):
         return self.__config['api']['api_passphrase']
 
     @property
-    @property_wrapper
+    @property_wrapper()
     def correction(self):
         return self.__config['bot'].getfloat('correction')
 
     @property
-    @property_wrapper
+    @property_wrapper()
     def default_interest(self):
         return self.__config['bot'].getfloat('default_interest')
 
     @property
-    @property_wrapper
-    @optional_wrapper(const.DEFAULT_MIN_RATE)
+    @property_wrapper(default=const.DEFAULT_MIN_RATE)
     def minimum_rate(self):
         return self.__config['bot'].getfloat('minimum_rate')
 
     @property
-    @property_wrapper
+    @property_wrapper()
     def charge(self):
         return self.__config['bot'].getfloat('charge')
 
     @property
-    @property_wrapper
+    @property_wrapper()
     def interval(self):
         return self.__config['bot'].getint('interval')
 
     @property
-    @property_wrapper
+    @property_wrapper()
     def user_key(self):
         return self.__config['pushover'].get('user_key')
 
     @property
-    @property_wrapper
+    @property_wrapper()
     def api_token(self):
         return self.__config['pushover'].get('api_token')
 
