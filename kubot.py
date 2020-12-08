@@ -54,8 +54,8 @@ class Scheduler(object):
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
                     rate = self.__minimum_rate
-                order_id = self.__client.create_lend_order("USDT", str(available), str(rate), 28)
-                self.push_message("OrderId: %s, Amount: %s, Rate: %s" % (order_id['orderId'], available, convert_float_to_percentage(rate)),
+                result = self.__client.create_lend_order("USDT", str(available), str(rate), 28)
+                self.push_message("OrderId: {}, Amount: {}, Rate: {}".format(result['orderId'], available, convert_float_to_percentage(rate)),
                                   title="Create Lend Order")
             else:
                 Logger().logger.info("Insufficient Amount on Main Account: %s", available)
