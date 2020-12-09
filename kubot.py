@@ -77,10 +77,10 @@ class Scheduler(object):
                 Logger().logger.info("Cancel Lend Order: Amount: %s, DailyIntRate: %s, "
                                      "MinIntRate: %s, DiffRate: %s, Correction: %s",
                                      a['size'],
-                                     daily_int_rate,
-                                     min_int_rate,
-                                     abs(daily_int_rate - min_int_rate),
-                                     config.correction
+                                     convert_float_to_percentage(daily_int_rate),
+                                     convert_float_to_percentage(min_int_rate),
+                                     convert_float_to_percentage(abs(daily_int_rate - min_int_rate)),
+                                     convert_float_to_percentage(config.correction)
                                      )
 
     def get_min_daily_interest_rate(self):
@@ -103,7 +103,7 @@ class Scheduler(object):
                     maturity_date = datetime.fromtimestamp(maturity_timestamp).strftime("%Y-%m-%d %H:%M:%S")
                     self.push_message("Amount: {}, DailyIntRate: {}, MaturityDate: {}, AccruedInterest: {}".format(
                         a['size'],
-                        convert_float_to_percentage(['dailyIntRate']),
+                        convert_float_to_percentage(a['dailyIntRate']),
                         maturity_date,
                         a['accruedInterest'])
                     , title="Create Active Lending")
