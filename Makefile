@@ -3,6 +3,12 @@
 image := kubot
 version := 0.3
 
+# check if python3 is installed
+CHECK_PYTHON3 := $(shell type -P python3)
+ifeq ('$(CHECK_PYTHON3)','')
+    $(error package 'python3' not found)
+endif
+
 help::
 	@echo "make build - build kubot docker image."
 build:
@@ -22,11 +28,18 @@ run:
 	docker run -v `pwd`/config/config:/app/config/config --name kubot ${image}:${version}
 
 help::
-	@echo "make venv - bootstrap python3 venv."
+	@echo "make venv - bootstrap python3 venv"
 venv:
-	python3 -m venv venv
+	@test -d "venv" || python3 -m venv venv
+
+help::
+	@echo "make install - install kubot dependencies"
+install: venv
+	@source venv/bin/activate; \
+	pip install --upgrade pip; \
+	pip install -r requirements.txt;
 
 help::
 	@echo "make test - run pytest suite."
-test:
-	PYTHONPATH=`pwd` pytest
+test: venv
+	@source venv/bin/activate; PYTHONPATH=`pwd` pytest
