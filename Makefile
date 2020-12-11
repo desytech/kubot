@@ -3,12 +3,6 @@
 image := kubot
 version := 0.3
 
-# check if python3 is installed
-CHECK_PYTHON3 := $(shell type -P python3)
-ifeq ('$(CHECK_PYTHON3)','')
-    $(error package 'python3' not found)
-endif
-
 help::
 	@echo "make build - build kubot docker image."
 build:
