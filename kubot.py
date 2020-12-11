@@ -120,6 +120,7 @@ def main():
         except Exception as e:
             Logger().logger.error("Error occurred initializing Pushover notifier: %s", e)
 
+    Logger().logger.info("Starting Kubot Version {}".format(get_version()))
     Scheduler(notifiers=notifiers)
 
 
