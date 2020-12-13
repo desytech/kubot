@@ -1,7 +1,6 @@
 import os
 import json
 from configparser import ConfigParser, ExtendedInterpolation
-from schema import Schema
 
 import const
 from schemas.config import currencies as currencies_schema
@@ -80,7 +79,6 @@ class Config(object):
     def currencies(self):
         currencies = json.loads(self.__config['bot'].get('currencies'))
         return currencies_schema.validate(currencies)
-
 
 
 config = Config()
