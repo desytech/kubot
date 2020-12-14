@@ -7,7 +7,8 @@ Lendbot for Kucoin with Pushover Support
 - copy `config/config.demo` to `config/config`
   
 # Configuration
-- **kucoin api_key, api_secret, api_passphrase**
+
+- **kucoin:  api_key, api_secret, api_passphrase**
 - **correction**:
   - funding market variation limit
 - **default_interest**:
@@ -16,9 +17,11 @@ Lendbot for Kucoin with Pushover Support
   - charge orders with some additional amount
 - **interval**:
   - kubot run interval in seconds
+- **currencies**
+  - currency specific settings
 - *optional*: minimum_rate
   - unset: minimum lending limit would be disabled
-- *optional* enter pushover user_key and api_token
+- *optional*: pushover user_key, api_token
 
 # Makefile
 - `make` to list all makefile targets
