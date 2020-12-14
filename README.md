@@ -5,17 +5,38 @@ Lendbot for Kucoin with Pushover Support
 
 # Preparation
 - copy `config/config.demo` to `config/config`
-- disable minimum_rate to enable automatic lending mode
-- enter kucoin api key, api secret and passphrase
-- enter pushover user_key and api_token (optional)
+  
+# Configuration
+- **kucoin api_key, api_secret, api_passphrase**
+- **correction**:
+  - funding market variation limit
+- **default_interest**:
+  - default daily interest if funding market is empty
+- **charge**:
+  - charge orders with some additional amount
+- **interval**:
+  - kubot run interval in seconds
+- *optional*: minimum_rate
+  - unset: minimum lending limit would be disabled
+- *optional* enter pushover user_key and api_token
 
 # Makefile
 - `make` to list all makefile targets
 
 # Build
 - `cd kubot`
-- `make build` or `docker build --tag kubot:0.1 .`
+- `make build`
 
 # Start
 - `cd kubot`
-- `make run-d` or ``docker run -v `pwd`/config/config:/app/config/config -d --name kubot kubot:0.1``
+- `make run-d`
+
+# Developement
+- `cd kubot`
+- `make venv`
+- `make install`
+- `source venv/bin/activate && python3 kubot.py`
+
+# Test
+- `cd kubot`
+- `make test`

@@ -118,6 +118,9 @@ class Scheduler(object):
 
 
 def main():
+    Logger().logger.info("Starting Kubot Version {}".format(get_version()))
+
+    # initialize notifier systems
     notifiers = [
         ConsoleNotifier(),
     ]
@@ -128,8 +131,10 @@ def main():
         except Exception as e:
             Logger().logger.error("Error occurred initializing Pushover notifier: %s", e)
 
-    Logger().logger.info("Starting Kubot Version {}".format(get_version()))
+    # initialize configured currencies
     currencies = [Currency(currency) for currency in config.currencies]
+
+    # start main scheduler process
     Scheduler(notifiers=notifiers, currencies=currencies)
 
 
