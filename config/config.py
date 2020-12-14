@@ -81,5 +81,4 @@ class Config(object):
         return currencies_schema.validate(currencies)
 
 
-
 config = Config()
