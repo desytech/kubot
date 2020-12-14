@@ -1,6 +1,9 @@
 import os
+import json
 from configparser import ConfigParser, ExtendedInterpolation
+
 import const
+from schemas.config import currencies as currencies_schema
 
 
 def property_wrapper(default=None):
@@ -70,6 +73,13 @@ class Config(object):
     @property_wrapper()
     def api_token(self):
         return self.__config['pushover'].get('api_token')
+
+    @property
+    @property_wrapper(default=[])
+    def currencies(self):
+        currencies = json.loads(self.__config['bot'].get('currencies'))
+        return currencies_schema.validate(currencies)
+
 
 
 config = Config()
