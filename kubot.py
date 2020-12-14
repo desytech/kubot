@@ -43,9 +43,9 @@ class Scheduler(object):
                 self.lend_loans(min_int_rate, currency.name)
                 self.check_active_lendings(currency.name)
             except (socket.timeout, requests.exceptions.Timeout) as e:
-                Logger().logger.error("Currency: %s, Transport Exception occurred: %s", currency, e)
+                Logger().logger.error("Currency: %s, Transport Exception occurred: %s", currency.name, e)
             except Exception as e:
-                Logger().logger.error("Currency: %s, Generic Error occurred: %s", currency, e)
+                Logger().logger.error("Currency: %s, Generic Error occurred: %s", currency.name, e)
 
     def lend_loans(self, min_int_rate, currency):
         account_list = self.__user.get_account_list(currency, 'main')
