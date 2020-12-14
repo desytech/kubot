@@ -9,7 +9,7 @@ from logger import Logger
 from datetime import datetime, timedelta
 from notification.pushovernotifier import Api as PushoverNotifier
 from notification.consolenotifier import Api as ConsoleNotifier
-from helper import convert_float_to_percentage
+from helper import convert_float_to_percentage, get_version
 from currencies.currency import Currency
 
 
@@ -128,6 +128,7 @@ def main():
         except Exception as e:
             Logger().logger.error("Error occurred initializing Pushover notifier: %s", e)
 
+    Logger().logger.info("Starting Kubot Version {}".format(get_version()))
     currencies = [Currency(currency) for currency in config.currencies]
     Scheduler(notifiers=notifiers, currencies=currencies)
 
