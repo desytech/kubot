@@ -33,23 +33,23 @@ class Scheduler(object):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
         for currency in self.__currencies:
             try:
-                min_int_rate = self.get_min_daily_interest_rate(currency.name)
+                min_int_rate = self.get_min_daily_interest_rate(currency)
                 min_int_rate_charge = float(format(min_int_rate + config.charge, '.5f'))
                 if min_int_rate_charge <= config.minimum_rate:
                     self.__minimum_rate = config.minimum_rate
                 elif self.__minimum_rate == const.DEFAULT_MIN_RATE or abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
                     self.__minimum_rate = min_int_rate_charge
-                self.check_active_loans(min_int_rate, currency.name)
-                self.lend_loans(min_int_rate, currency.name)
-                self.check_active_lendings(currency.name)
+                self.check_active_loans(min_int_rate, currency)
+                self.lend_loans(min_int_rate, currency)
+                self.check_active_lendings(currency)
             except (socket.timeout, requests.exceptions.Timeout) as e:
                 Logger().logger.error("Currency: %s, Transport Exception occurred: %s", currency.name, e)
             except Exception as e:
                 Logger().logger.error("Currency: %s, Generic Error occurred: %s", currency.name, e)
 
     def lend_loans(self, min_int_rate, currency):
-        account_list = self.__user.get_account_list(currency, 'main')
-        account = next((x for x in account_list if x['currency'] == currency), None)
+        account_list = self.__user.get_account_list(currency.name, 'main')
+        account = next((x for x in account_list if x['currency'] == currency.name), None)
         if account:
             available = int(float(account['available']))
             if const.MIN_LEND_SIZE <= available <= const.MAX_LEND_SIZE:
@@ -57,15 +57,15 @@ class Scheduler(object):
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
                     rate = self.__minimum_rate
-                result = self.__client.create_lend_order(currency, str(available), str(rate), currency.term)
+                result = self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
                 self.push_message("Currency: {}, OrderId: {}, Amount: {}, Rate: {}".format(
-                    currency, result['orderId'], available, convert_float_to_percentage(rate)
+                    currency.name, result['orderId'], available, convert_float_to_percentage(rate)
                 ), title="Create Lend Order")
             else:
-                Logger().logger.info("Insufficient Amount on %s Main Account: %s", currency, available)
+                Logger().logger.info("Insufficient Amount on %s Main Account: %s", currency.name, available)
 
     def check_active_loans(self, min_int_rate, currency):
-        active_orders = self.__client.get_active_order(currency=currency)
+        active_orders = self.__client.get_active_order(currency=currency.name)
         items = active_orders.get('items')
 
         for a in items:
@@ -80,7 +80,7 @@ class Scheduler(object):
                 self.__client.cancel_lend_order(a['orderId'])
                 Logger().logger.info("Cancel Lend Order: Currency: %s, Amount: %s, DailyIntRate: %s, "
                                      "MinIntRate: %s, DiffRate: %s, Correction: %s",
-                                     currency,
+                                     currency.name,
                                      a['size'],
                                      convert_float_to_percentage(daily_int_rate),
                                      convert_float_to_percentage(min_int_rate),
@@ -89,7 +89,7 @@ class Scheduler(object):
                                      )
 
     def get_min_daily_interest_rate(self, currency):
-        lending_market = self.__client.get_lending_market(currency)
+        lending_market = self.__client.get_lending_market(currency.name)
         lending_market = lending_market['data'] if 'data' in lending_market else lending_market
         if lending_market:
             return float(lending_market[0]['dailyIntRate'])
@@ -97,19 +97,17 @@ class Scheduler(object):
             return config.default_interest
 
     def check_active_lendings(self, currency):
-        active_list = self.__client.get_active_list(pageSize=50)
+        active_list = self.__client.get_active_list(pageSize=50, currency=currency.name)
         if active_list and active_list['items']:
             utc_now = datetime.utcnow()
             dt = timedelta(seconds=config.interval).total_seconds()
             for a in active_list['items']:
-                if a['currency'] != currency:
-                    continue
                 maturity_timestamp = a['maturityTime'] / 1000
                 time_diff = (utc_now - (datetime.utcfromtimestamp(maturity_timestamp) - timedelta(a['term']))).total_seconds()
                 if time_diff <= dt:
                     maturity_date = datetime.fromtimestamp(maturity_timestamp).strftime("%Y-%m-%d %H:%M:%S")
                     self.push_message("Currency: {}, Amount: {}, DailyIntRate: {}, MaturityDate: {}, AccruedInterest: {}".format(
-                        currency,
+                        currency.name,
                         a['size'],
                         convert_float_to_percentage(a['dailyIntRate']),
                         maturity_date,
