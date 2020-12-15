@@ -40,7 +40,7 @@ class Scheduler(object):
                 elif self.__minimum_rate == const.DEFAULT_MIN_RATE or abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
                     self.__minimum_rate = min_int_rate_charge
                 self.check_active_loans(min_int_rate, currency.name)
-                self.lend_loans(min_int_rate, currency.name)
+                self.lend_loans(min_int_rate, currency)
                 self.check_active_lendings(currency.name)
             except (socket.timeout, requests.exceptions.Timeout) as e:
                 Logger().logger.error("Currency: %s, Transport Exception occurred: %s", currency, e)
@@ -51,18 +51,21 @@ class Scheduler(object):
         account_list = self.__user.get_account_list(currency, 'main')
         account = next((x for x in account_list if x['currency'] == currency), None)
         if account:
-            available = int(float(account['available']))
-            if const.MIN_LEND_SIZE <= available <= const.MAX_LEND_SIZE:
+            account_available = int(float(account['available']))
+            available = None
+            if account_available >= currency.reserved_amount:
+                available = account_available - currency.reserved_amount
+            if available and const.MIN_LEND_SIZE <= available <= const.MAX_LEND_SIZE:
                 if min_int_rate >= self.__minimum_rate:
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
                     rate = self.__minimum_rate
-                result = self.__client.create_lend_order(currency, str(available), str(rate), currency.term)
+                result = self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
                 self.push_message("Currency: {}, OrderId: {}, Amount: {}, Rate: {}".format(
-                    currency, result['orderId'], available, convert_float_to_percentage(rate)
+                    currency.name, result['orderId'], available, convert_float_to_percentage(rate)
                 ), title="Create Lend Order")
             else:
-                Logger().logger.info("Insufficient Amount on %s Main Account: %s", currency, available)
+                Logger().logger.info("Insufficient Amount on %s Main Account: %s", currency.name, available)
 
     def check_active_loans(self, min_int_rate, currency):
         active_orders = self.__client.get_active_order(currency=currency)
@@ -129,7 +132,9 @@ def main():
             Logger().logger.error("Error occurred initializing Pushover notifier: %s", e)
 
     currencies = [Currency(currency) for currency in config.currencies]
-    Scheduler(notifiers=notifiers, currencies=currencies)
+    for currency in currencies:
+        print(currency.reserved_amount)
+    #Scheduler(notifiers=notifiers, currencies=currencies)
 
 
 if __name__ == "__main__":
