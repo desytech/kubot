@@ -111,7 +111,7 @@ class Scheduler(object):
                         a['size'],
                         convert_float_to_percentage(a['dailyIntRate']),
                         maturity_date,
-                        a['accruedInterest'])
+                        float(a['size']) * float(a['dailyIntRate']) * float(1 - const.LENDING_FEES) * a['term'])
                     , title="Create Active Lending")
 
 
