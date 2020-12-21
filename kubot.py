@@ -51,18 +51,18 @@ class Scheduler(object):
         account_list = self.__user.get_account_list(currency.name, 'main')
         account = next((x for x in account_list if x['currency'] == currency.name), None)
         if account:
-            available = int(float(account['available']))
+            available = int(float(account['available'])) - currency.reserved_amount
             if const.MIN_LEND_SIZE <= available <= const.MAX_LEND_SIZE:
                 if min_int_rate >= self.__minimum_rate:
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
                     rate = self.__minimum_rate
-                result = self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
-                self.push_message("Currency: {}, OrderId: {}, Amount: {}, Rate: {}".format(
-                    currency.name, result['orderId'], available, convert_float_to_percentage(rate)
-                ), title="Create Lend Order")
+                    result = self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
+                    self.push_message("Currency: {}, OrderId: {}, Amount: {}, Rate: {}".format(
+                         currency.name, result['orderId'], available, convert_float_to_percentage(rate)
+                    ), title="Create Lend Order")
             else:
-                Logger().logger.info("Insufficient Amount on %s Main Account: %s", currency.name, available)
+                Logger().logger.info("Insufficient Amount on %s Main Account: %s. Reserved Amount: %s", currency.name, str(available), str(currency.reserved_amount))
 
     def check_active_loans(self, min_int_rate, currency):
         active_orders = self.__client.get_active_order(currency=currency.name)
@@ -131,7 +131,6 @@ def main():
 
     # initialize configured currencies
     currencies = [Currency(currency) for currency in config.currencies]
-
     # start main scheduler process
     Scheduler(notifiers=notifiers, currencies=currencies)
 
