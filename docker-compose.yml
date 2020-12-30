@@ -1,0 +1,21 @@
+version: "3.9"
+
+volumes:
+  grafana-storage:
+    driver: local
+
+services:
+  kubot:
+    image: ${KUBOT_IMAGE}:${KUBOT_VERSION}
+    container_name: kubot
+    volumes:
+    - ./config/config:/app/config/config
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_INSTALL_PLUGINS=https://github.com/fr-ser/grafana-sqlite-datasource/releases/download/v0.2.5/frser-sqlite-datasource-0.2.5.zip;frser-sqlite-datasource
+    ports:
+      - 3000:3000
