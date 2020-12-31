@@ -15,6 +15,8 @@ services:
     container_name: grafana
     volumes:
       - grafana-storage:/var/lib/grafana
+      - ./db:/opt
+      - ./provisioning:/etc/grafana/provisioning
     environment:
       - GF_INSTALL_PLUGINS=https://github.com/fr-ser/grafana-sqlite-datasource/releases/download/v0.2.5/frser-sqlite-datasource-0.2.5.zip;frser-sqlite-datasource
     ports:
