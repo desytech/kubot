@@ -11,7 +11,7 @@ build:
 
 help::
 	@echo "make compose - compose kubot suite"
-compose:
+compose: build
 	KUBOT_IMAGE=${image} KUBOT_VERSION=${version} docker-compose up -d
 
 help::
