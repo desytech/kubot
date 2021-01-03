@@ -10,6 +10,11 @@ build:
 	docker image prune -f
 
 help::
+	@echo "make compose - compose kubot suite"
+compose: build
+	KUBOT_IMAGE=${image} KUBOT_VERSION=${version} docker-compose up -d
+
+help::
 	@echo "make run-d - run kubot docker image detached."
 run-d:
 	docker stop kubot || true
