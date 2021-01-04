@@ -29,10 +29,7 @@ Lendbot for Kucoin with Grafana Dashboard and Pushover Support
 # Makefile
 - `make` to list all makefile targets
 
-# Build
-- `make build`
-
-# Start
+# Build & Start
 - Start Kubot Suite: `make compose`
 - Open Dashboard: `http://localhost:3000`
 
