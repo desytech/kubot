@@ -1,5 +1,5 @@
 # Kubot
-Lendbot for Kucoin with Grafana Dashboard and Notification (Pushover) Support
+Lendbot for Kucoin with Grafana Dashboard and Pushover Support
 
 ![Kubot](https://github.com/desy83/kubot/workflows/Kubot/badge.svg)
 
@@ -44,7 +44,7 @@ Lendbot for Kucoin with Grafana Dashboard and Notification (Pushover) Support
 - `make install`
 - `make development`
 - `source venv/bin/activate && python3 kubot.py`
-  ##### Database Connection
+  #### Database Connection
 - `PGPASSWORD=kubot psql -h localhost -p 5433 -U kubot` 
 
 # Test
