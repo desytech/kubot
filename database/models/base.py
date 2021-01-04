@@ -2,7 +2,7 @@ from peewee import *
 from playhouse.pool import PooledPostgresqlExtDatabase
 
 db = PooledPostgresqlExtDatabase('kubot', user='kubot',
-                           password='kubot', host='host.docker.internal',
+                           password='kubot', host='localhost',
                            port=5433, max_connections=8, stale_timeout=300)
 
 class BaseModel(Model):

@@ -20,11 +20,13 @@ services:
     - kubotdb-storage:/var/lib/postgresql/data
   kubot:
     image: ${KUBOT_IMAGE}:${KUBOT_VERSION}
+    network_mode: host
     container_name: kubot
     volumes:
     - ./config/config:/app/config/config
   grafana:
     image: grafana/grafana
+    network_mode: host
     container_name: kubot-gui
     volumes:
       - grafana-storage:/var/lib/grafana

@@ -3,7 +3,7 @@ datasources:
   - name: kubot-datasource
     type: postgres
     access: proxy
-    url: host.docker.internal:5433
+    url: localhost:5433
     password: kubot
     user: kubot
     database: kubot
