@@ -21,11 +21,15 @@ services:
   kubot:
     image: ${KUBOT_IMAGE}:${KUBOT_VERSION}
     container_name: kubot
+    depends_on:
+      - postgres
     volumes:
     - ./config/config:/app/config/config
   grafana:
     image: grafana/grafana
     container_name: kubot-gui
+    depends_on:
+      - postgres
     volumes:
       - grafana-storage:/var/lib/grafana
       - ./provisioning:/etc/grafana/provisioning
