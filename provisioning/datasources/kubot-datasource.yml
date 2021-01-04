@@ -3,12 +3,13 @@ datasources:
   - name: kubot-datasource
     type: postgres
     access: proxy
-    url: localhost:5433
+    url: postgres:5432
     password: kubot
     user: kubot
     database: kubot
     basicAuth: false
     jsonData:
       sslmode: disable
+      postgresVersion: 1200
     editable: true
     isDefault: true
