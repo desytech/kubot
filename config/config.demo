@@ -14,10 +14,3 @@ currencies = [{"currency": "USDT", "term": 28, "reserved_amount": 10}]
 [pushover]
 user_key = user_key
 api_token = api_token
-
-[database]
-host = host.docker.internal
-username = kubot
-password = kubot
-database = kubot
-port = 5433
