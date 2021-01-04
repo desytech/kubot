@@ -3,6 +3,8 @@ import socket
 import requests
 
 import const
+from database.models.base import db
+from database.models.market import FundingMarket
 from kucoin.client import Margin, User
 from config.config import config
 from logger import Logger
@@ -29,8 +31,13 @@ class Scheduler(object):
         for notifier in self.__notifiers:
             notifier.send_message(message, title=title)
 
+    def cleanup_database(self):
+        time_delta = datetime.utcnow() - timedelta(days=365)
+        FundingMarket.delete().where(FundingMarket.time < time_delta).execute()
+
     def schedule_checks(self, interval):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
+        self.cleanup_database()
         for currency in self.__currencies:
             try:
                 min_int_rate = self.get_min_daily_interest_rate(currency)
@@ -91,6 +98,8 @@ class Scheduler(object):
     def get_min_daily_interest_rate(self, currency):
         lending_market = self.__client.get_lending_market(currency.name)
         lending_market = lending_market['data'] if 'data' in lending_market else lending_market
+        market = FundingMarket(currency=currency.name, market=lending_market)
+        Logger().logger.info('%s rows saved into the funding market table', market.save())
         if lending_market:
             return float(lending_market[0]['dailyIntRate'])
         else:
@@ -117,6 +126,10 @@ class Scheduler(object):
 
 def main():
     Logger().logger.info("Starting Kubot Version {}".format(get_version()))
+
+    # initialize database
+    with db:
+        db.create_tables([FundingMarket])
 
     # initialize notifier systems
     notifiers = [
