@@ -1,4 +1,4 @@
-.PHONY: build run run-d venv
+.PHONY: build run run-d venv development compose test install
 
 image := kubot
 version := 1.0
@@ -10,9 +10,14 @@ build:
 	docker image prune -f
 
 help::
-	@echo "make compose - compose kubot suite"
+	@echo "make compose - compose and start kubot suite"
 compose: build
 	KUBOT_IMAGE=${image} KUBOT_VERSION=${version} docker-compose up -d
+
+help::
+	@echo "make development - start kubot database and gui"
+development:
+	KUBOT_IMAGE=${image} KUBOT_VERSION=${version} docker-compose up -d postgres grafana
 
 help::
 	@echo "make run-d - run kubot docker image detached."

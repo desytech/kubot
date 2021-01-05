@@ -1,9 +1,15 @@
 apiVersion: 1
 datasources:
   - name: kubot-datasource
-    type: frser-sqlite-datasource
+    type: postgres
     access: proxy
+    url: postgres:5432
+    password: kubot
+    user: kubot
+    database: kubot
+    basicAuth: false
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1200
     editable: true
     isDefault: true
-    jsonData:
-      path: /opt/kubot.db
