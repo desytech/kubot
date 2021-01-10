@@ -5,6 +5,8 @@ import requests
 import const
 from database.models.base import db
 from database.models.market import FundingMarket
+from database.models.activeorder import ActiveLendOrder
+from database.models.assets import LendingAssets
 from kucoin.client import Margin, User
 from config.config import config
 from logger import Logger
@@ -32,8 +34,10 @@ class Scheduler(object):
             notifier.send_message(message, title=title)
 
     def cleanup_database(self):
-        time_delta = datetime.utcnow() - timedelta(days=365)
+        time_delta = datetime.utcnow() - timedelta(days=90)
         FundingMarket.delete().where(FundingMarket.time < time_delta).execute()
+        ActiveLendOrder.delete().where(ActiveLendOrder.time < time_delta).execute()
+        LendingAssets.delete().where(LendingAssets.time < time_delta).execute()
 
     def schedule_checks(self, interval):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
@@ -46,6 +50,7 @@ class Scheduler(object):
                     self.__minimum_rate = config.minimum_rate
                 elif self.__minimum_rate == const.DEFAULT_MIN_RATE or abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
                     self.__minimum_rate = min_int_rate_charge
+                self.get_lending_assets(currency)
                 self.check_active_loans(min_int_rate, currency)
                 self.lend_loans(min_int_rate, currency)
                 self.check_active_lendings(currency)
@@ -53,6 +58,11 @@ class Scheduler(object):
                 Logger().logger.error("Currency: %s, Transport Exception occurred: %s", currency.name, e)
             except Exception as e:
                 Logger().logger.error("Currency: %s, Generic Error occurred: %s", currency.name, e)
+
+    def get_lending_assets(self, currency):
+        asset = self.__client.get_lend_record(currency=currency.name)
+        lending_asset = LendingAssets(currency=currency.name, assets=asset)
+        Logger().logger.info('%s rows saved into the lending assets table', lending_asset.save())
 
     def lend_loans(self, min_int_rate, currency):
         account_list = self.__user.get_account_list(currency.name, 'main')
@@ -64,10 +74,10 @@ class Scheduler(object):
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
                     rate = self.__minimum_rate
-                    result = self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
-                    self.push_message("Currency: {}, OrderId: {}, Amount: {}, Rate: {}".format(
-                         currency.name, result['orderId'], available, convert_float_to_percentage(rate)
-                    ), title="Create Lend Order")
+                result = self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
+                self.push_message("Currency: {}, OrderId: {}, Amount: {}, Rate: {}".format(
+                     currency.name, result['orderId'], available, convert_float_to_percentage(rate)
+                ), title="Create Lend Order")
             else:
                 Logger().logger.info("Insufficient Amount on %s Main Account: %s. Reserved Amount: %s", currency.name, str(available), str(currency.reserved_amount))
 
@@ -107,21 +117,25 @@ class Scheduler(object):
 
     def check_active_lendings(self, currency):
         active_list = self.__client.get_active_list(pageSize=50, currency=currency.name)
-        if active_list and active_list['items']:
-            utc_now = datetime.utcnow()
-            dt = timedelta(seconds=config.interval).total_seconds()
-            for a in active_list['items']:
-                maturity_timestamp = a['maturityTime'] / 1000
-                time_diff = (utc_now - (datetime.utcfromtimestamp(maturity_timestamp) - timedelta(a['term']))).total_seconds()
-                if time_diff <= dt:
-                    maturity_date = datetime.fromtimestamp(maturity_timestamp).strftime("%Y-%m-%d %H:%M:%S")
-                    self.push_message("Currency: {}, Amount: {}, DailyIntRate: {}, MaturityDate: {}, AccruedInterest: {}".format(
-                        currency.name,
-                        a['size'],
-                        convert_float_to_percentage(a['dailyIntRate']),
-                        maturity_date,
-                        round(float(a['size']) * float(a['dailyIntRate']) * float(1 - const.LENDING_FEES) * a['term']), 2)
-                    , title="Create Active Lending")
+        if active_list:
+            if 'items' in active_list:
+                active_order = ActiveLendOrder(currency=currency.name, items=active_list['items'])
+                Logger().logger.info('%s rows saved into the active order table', active_order.save())
+                if active_list['items']:
+                    utc_now = datetime.utcnow()
+                    dt = timedelta(seconds=config.interval).total_seconds()
+                    for a in active_list['items']:
+                        maturity_timestamp = a['maturityTime'] / 1000
+                        time_diff = (utc_now - (datetime.utcfromtimestamp(maturity_timestamp) - timedelta(a['term']))).total_seconds()
+                        if time_diff <= dt:
+                            maturity_date = datetime.fromtimestamp(maturity_timestamp).strftime("%Y-%m-%d %H:%M:%S")
+                            self.push_message("Currency: {}, Amount: {}, DailyIntRate: {}, MaturityDate: {}, AccruedInterest: {}".format(
+                                currency.name,
+                                a['size'],
+                                convert_float_to_percentage(a['dailyIntRate']),
+                                maturity_date,
+                                round(float(a['size']) * float(a['dailyIntRate']) * float(1 - const.LENDING_FEES) * a['term'], 2))
+                            , title="Create Active Lending")
 
 
 def main():
@@ -129,7 +143,7 @@ def main():
 
     # initialize database
     with db:
-        db.create_tables([FundingMarket])
+        db.create_tables([FundingMarket, ActiveLendOrder, LendingAssets])
 
     # initialize notifier systems
     notifiers = [

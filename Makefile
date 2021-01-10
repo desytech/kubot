@@ -1,6 +1,6 @@
 
 image := kubot
-version := 1.1
+version := 2.0
 
 build: ## build kubot docker image
 	docker build --tag ${image}:${version} .
