@@ -1,7 +1,7 @@
 .PHONY: build run run-d venv development compose test install
 
 image := kubot
-version := 1.1
+version := 2.0
 
 help::
 	@echo "make build - build kubot docker image."
