@@ -6,6 +6,7 @@ import const
 from database.models.base import db
 from database.models.market import FundingMarket
 from database.models.activeorder import ActiveLendOrder
+from database.models.assets import LendingAssets
 from kucoin.client import Margin, User
 from config.config import config
 from logger import Logger
@@ -36,7 +37,7 @@ class Scheduler(object):
         time_delta = datetime.utcnow() - timedelta(days=90)
         FundingMarket.delete().where(FundingMarket.time < time_delta).execute()
         ActiveLendOrder.delete().where(ActiveLendOrder.time < time_delta).execute()
-
+        LendingAssets.delete().where(LendingAssets.time < time_delta).execute()
 
     def schedule_checks(self, interval):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
@@ -49,6 +50,7 @@ class Scheduler(object):
                     self.__minimum_rate = config.minimum_rate
                 elif self.__minimum_rate == const.DEFAULT_MIN_RATE or abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
                     self.__minimum_rate = min_int_rate_charge
+                self.get_lending_assets(currency)
                 self.check_active_loans(min_int_rate, currency)
                 self.lend_loans(min_int_rate, currency)
                 self.check_active_lendings(currency)
@@ -56,6 +58,11 @@ class Scheduler(object):
                 Logger().logger.error("Currency: %s, Transport Exception occurred: %s", currency.name, e)
             except Exception as e:
                 Logger().logger.error("Currency: %s, Generic Error occurred: %s", currency.name, e)
+
+    def get_lending_assets(self, currency):
+        asset = self.__client.get_lend_record(currency=currency.name)
+        lending_asset = LendingAssets(currency=currency.name, assets=asset)
+        Logger().logger.info('%s rows saved into the lending assets table', lending_asset.save())
 
     def lend_loans(self, min_int_rate, currency):
         account_list = self.__user.get_account_list(currency.name, 'main')
@@ -136,7 +143,7 @@ def main():
 
     # initialize database
     with db:
-        db.create_tables([FundingMarket, ActiveLendOrder])
+        db.create_tables([FundingMarket, ActiveLendOrder, LendingAssets])
 
     # initialize notifier systems
     notifiers = [
