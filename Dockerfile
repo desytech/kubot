@@ -9,4 +9,8 @@ WORKDIR /app
 
 RUN pip install -r requirements.txt
 
+ADD http://pyarmor.dashingsoft.com/downloads/latest/alpine/_pytransform.so /usr/local/lib/python3.8/site-packages/pyarmor/platforms/linux/x86_64/
+
+RUN pyarmor obfuscate --exclude venv --exclude tests --recursive src/kubot.py
+
 CMD ["python", "src/kubot.py"]
