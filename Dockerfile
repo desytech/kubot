@@ -9,4 +9,4 @@ WORKDIR /app
 
 RUN pip install -r requirements.txt
 
-CMD ["python", "kubot.py"]
+CMD ["python", "src/kubot.py"]

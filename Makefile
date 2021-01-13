@@ -29,7 +29,7 @@ install: venv ## install kubot dependencies
 	pip install -r requirements.txt;
 
 test: venv ## run pytest suite
-	@source venv/bin/activate; PYTHONPATH=`pwd` pytest
+	@source venv/bin/activate; PYTHONPATH=`pwd`/src pytest
 
 
 .PHONY: build run run-d venv development compose test install
