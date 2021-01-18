@@ -4,7 +4,8 @@ Lendbot for Kucoin with Grafana Dashboard and Pushover Support
 ![Kubot](https://github.com/desy83/kubot/workflows/Kubot/badge.svg)
 
 # Requirements
-- Docker, Docker Compose, Python3
+- Runtime: Make, Docker, Docker Compose
+- Development: Python3
 
 # Preparation
 - copy `config/config.demo` to `config/config`
@@ -29,12 +30,16 @@ Lendbot for Kucoin with Grafana Dashboard and Pushover Support
 # Makefile
 - `make` to list all makefile targets
 
-# Build & Start
+# Start
 - Start Kubot Suite: `make compose`
 - Open Dashboard: `http://localhost:3000`
 
 # Stop
-- Stop Kubot Suite: `docker-compose down`
+- Stop Kubot Suite: `make stop`
+
+# Build
+- Production: `make build`
+- Development: `make build-dev`
 
 # Developement
 - `make venv`
