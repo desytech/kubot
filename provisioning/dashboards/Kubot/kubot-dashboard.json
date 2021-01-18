@@ -58,7 +58,7 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": false
       },
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.6",
       "targets": [
         {
           "format": "time_series",
@@ -134,7 +134,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.6",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -148,7 +148,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select \ntime, sum((active_order->>'size')::numeric) as totalSize\nfrom activelendorder\ncross join json_array_elements(items) as active_order\nwhere currency = 'USDT'\ngroup by time\norder by 1;\n",
+          "rawSql": "select \ntime, sum((active_order->>'size')::numeric - (active_order->>'repaid')::numeric) as totalSize\nfrom activelendorder\ncross join json_array_elements(items) as active_order\nwhere currency = 'USDT'\ngroup by time\norder by 1;\n",
           "refId": "A",
           "select": [
             [
@@ -253,7 +253,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.6",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -451,7 +451,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.6",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -584,7 +584,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.6",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -705,7 +705,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.6",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -806,5 +806,5 @@
   "timezone": "",
   "title": "Overview",
   "uid": "uXWL7HaGk",
-  "version": 5
+  "version": 10
 }
