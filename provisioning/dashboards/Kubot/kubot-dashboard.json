@@ -104,7 +104,8 @@
       "fieldConfig": {
         "defaults": {
           "custom": {},
-          "displayName": "Total Amount"
+          "displayName": "Total Amount",
+          "unit": "none"
         },
         "overrides": []
       },
@@ -190,7 +191,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "none",
           "label": "Total Amount USDT",
           "logBase": 1,
           "max": null,
@@ -806,5 +807,5 @@
   "timezone": "",
   "title": "Overview",
   "uid": "uXWL7HaGk",
-  "version": 10
+  "version": 11
 }
