@@ -10,6 +10,7 @@ services:
   postgres:
     image: postgres:12
     container_name: kubot-db
+    restart: unless-stopped
     ports:
     - 5433:5432
     environment:
@@ -21,6 +22,7 @@ services:
   kubot:
     image: ${KUBOT_IMAGE}:${KUBOT_VERSION}
     container_name: kubot
+    restart: unless-stopped
     depends_on:
       - postgres
     volumes:
@@ -28,6 +30,7 @@ services:
   grafana:
     image: grafana/grafana
     container_name: kubot-gui
+    restart: unless-stopped
     depends_on:
       - postgres
     volumes:
