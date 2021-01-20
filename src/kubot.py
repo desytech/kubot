@@ -139,7 +139,13 @@ class Scheduler(object):
 
 
 def main():
-    Logger().logger.info("Starting Kubot Version {}".format(get_version()))
+    Logger().logger.info("Starting Kubot Version {} - "
+                         "Config: Correction: {}, Default Interest: {}, Minimum Rate: {}, Charge: {}"
+                         .format(get_version(),
+                                 "{:f}".format(config.correction),
+                                 "{:f}".format(config.default_interest),
+                                 "{:f}".format(config.minimum_rate),
+                                 "{:f}".format(config.charge)))
 
     # initialize database
     with db:
@@ -150,6 +156,7 @@ def main():
         ConsoleNotifier(),
     ]
 
+    # initialize pushover notifier
     if PushoverNotifier.is_valid_key(config.user_key) and PushoverNotifier.is_valid_key(config.api_token):
         try:
             notifiers.append(PushoverNotifier(config.user_key, config.api_token))
@@ -158,6 +165,7 @@ def main():
 
     # initialize configured currencies
     currencies = [Currency(currency) for currency in config.currencies]
+
     # start main scheduler process
     Scheduler(notifiers=notifiers, currencies=currencies)
 

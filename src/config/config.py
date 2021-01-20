@@ -22,7 +22,7 @@ def property_wrapper(default=None):
 class Config(object):
     def __init__(self):
         self.__config = ConfigParser(interpolation=ExtendedInterpolation())
-        self.__config.read(os.path.join(os.path.dirname(__file__), 'config'))
+        self.__config.read(os.path.join(os.path.dirname(__file__), '../../config/config'))
 
     @property
     @property_wrapper()
