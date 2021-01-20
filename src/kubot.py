@@ -142,10 +142,10 @@ def main():
     Logger().logger.info("Starting Kubot Version {} - "
                          "Config: Correction: {}, Default Interest: {}, Minimum Rate: {}, Charge: {}"
                          .format(get_version(),
-                                 "{:f}".format(config.correction),
-                                 "{:f}".format(config.default_interest),
-                                 "{:f}".format(config.minimum_rate),
-                                 "{:f}".format(config.charge)))
+                                 convert_float_to_percentage(config.correction),
+                                 convert_float_to_percentage(config.default_interest),
+                                 convert_float_to_percentage(config.minimum_rate),
+                                 convert_float_to_percentage(config.charge)))
 
     # initialize database
     with db:
