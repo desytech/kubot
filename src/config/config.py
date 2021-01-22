@@ -80,5 +80,15 @@ class Config(object):
         currencies = json.loads(self.__config['bot'].get('currencies'))
         return currencies_schema.validate(currencies)
 
+    @property
+    @property_wrapper()
+    def slack_api_token(self):
+        return self.__config['slack'].get('api_token')
+
+    @property
+    @property_wrapper()
+    def slack_channel(self):
+        return self.__config['slack'].get('channel')
+
 
 config = Config()
