@@ -2,7 +2,7 @@ from logger import Logger
 from notification.notify import Notifier
 
 
-class Api(Notifier):
+class ConsoleNotifier(Notifier):
 
     @staticmethod
     def is_valid_config(config):

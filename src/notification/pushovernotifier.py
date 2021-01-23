@@ -1,13 +1,12 @@
 import re
 
-import const
 from notification.notify import Notifier
 from pushover import Client
 from logger import Logger
 
 REGEX_PUSHOVER_KEYS = r'^\w{30,30}$'
 
-class Api(Notifier):
+class PushoverNotifier(Notifier):
 
     def __init__(self, config):
         self.user_key = config.user_key

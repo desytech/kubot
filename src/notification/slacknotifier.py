@@ -1,12 +1,11 @@
 import re
-from logger import Logger
 import requests
 from notification.notify import Notifier
 
 
 REGEX_SLACK_API_TOKEN = r'^xoxb-\w{13,13}-\w{13,13}-\w{24,24}$'
 
-class Api(Notifier):
+class SlackNotifier(Notifier):
 
     def __init__(self, config):
         self.channel = config.slack_channel

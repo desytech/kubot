@@ -11,9 +11,9 @@ from kucoin.client import Margin, User
 from config.config import config
 from logger import Logger
 from datetime import datetime, timedelta
-from notification.pushovernotifier import Api as PushoverNotifier
-from notification.consolenotifier import Api as ConsoleNotifier
-from notification.slacknotifier import Api as SlackNotifier
+from notification.pushovernotifier import PushoverNotifier
+from notification.consolenotifier import ConsoleNotifier
+from notification.slacknotifier import SlackNotifier
 from helper import convert_float_to_percentage, get_version
 from currencies.currency import Currency
 
@@ -165,7 +165,7 @@ def main():
     try_add_notifier(ConsoleNotifier, notifiers)
     try_add_notifier(PushoverNotifier, notifiers)
     try_add_notifier(SlackNotifier, notifiers)
-    Logger().logger.info(f"configured notifiers: {notifiers}")
+    Logger().logger.info(f"Configured Notifiers: {[notifier.__class__.__name__ for notifier in notifiers]}")
 
     # initialize configured currencies
     currencies = [Currency(currency) for currency in config.currencies]
