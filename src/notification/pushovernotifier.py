@@ -6,6 +6,12 @@ from logger import Logger
 
 REGEX_PUSHOVER_KEYS = r'^\w{30,30}$'
 
+class ErrInvalidPushoverUserKey(Exception):
+    pass
+
+class ErrInvalidPushoverApiToken(Exception):
+    pass
+
 class PushoverNotifier(Notifier):
 
     def __init__(self, config):
@@ -15,10 +21,13 @@ class PushoverNotifier(Notifier):
 
     @staticmethod
     def is_valid_config(config):
+        if config.user_key == 'user_key' or config.api_token == 'api_token':
+            Logger().logger.warning(f"pushover notifier are defaults: {config.user_key}, {config.api_token}. ignoring...")
+            return False
         if not re.match(REGEX_PUSHOVER_KEYS, config.user_key):
-            return False
+            raise ErrInvalidPushoverUserKey(f"{config.user_key}")
         if not re.match(REGEX_PUSHOVER_KEYS, config.api_token):
-            return False
+            raise ErrInvalidPushoverApiToken(f"{config.api_token}")
         return True
 
     @property
