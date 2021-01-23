@@ -16,8 +16,6 @@ class Api(Notifier):
 
     @staticmethod
     def is_valid_config(config):
-        if not config.slack_api_token:
-            return False
         if not re.match(REGEX_SLACK_API_TOKEN, config.slack_api_token):
             return False
         return True

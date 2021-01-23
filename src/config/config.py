@@ -65,12 +65,12 @@ class Config(object):
         return self.__config['bot'].getint('interval')
 
     @property
-    @property_wrapper()
+    @property_wrapper(default='')
     def user_key(self):
         return self.__config['pushover'].get('user_key')
 
     @property
-    @property_wrapper()
+    @property_wrapper(default='')
     def api_token(self):
         return self.__config['pushover'].get('api_token')
 
@@ -81,12 +81,12 @@ class Config(object):
         return currencies_schema.validate(currencies)
 
     @property
-    @property_wrapper()
+    @property_wrapper(default='')
     def slack_api_token(self):
         return self.__config['slack'].get('api_token')
 
     @property
-    @property_wrapper()
+    @property_wrapper(default='general')
     def slack_channel(self):
         return self.__config['slack'].get('channel')
 
