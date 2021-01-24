@@ -1,23 +1,25 @@
 import re
 
-import const
 from notification.notify import Notifier
 from pushover import Client
 from logger import Logger
 
+REGEX_PUSHOVER_KEYS = r'^\w{30,30}$'
 
-class Api(Notifier):
+class PushoverNotifier(Notifier):
 
-    def __init__(self, user_key, api_token):
-        self.user_key = user_key
-        self.api_token = api_token
-        self.client = Client(user_key, api_token=api_token)
+    def __init__(self, config):
+        self.user_key = config.user_key
+        self.api_token = config.api_token
+        self.client = Client(self.user_key, api_token=self.api_token)
 
     @staticmethod
-    def is_valid_key(key):
-        if not key:
+    def is_valid_config(config):
+        if not re.match(REGEX_PUSHOVER_KEYS, config.user_key):
             return False
-        return re.match(const.REGEX_PUSHOVER_KEYS, key)
+        if not re.match(REGEX_PUSHOVER_KEYS, config.api_token):
+            return False
+        return True
 
     @property
     def api(self):

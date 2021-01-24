@@ -11,8 +11,9 @@ from kucoin.client import Margin, User
 from config.config import config
 from logger import Logger
 from datetime import datetime, timedelta
-from notification.pushovernotifier import Api as PushoverNotifier
-from notification.consolenotifier import Api as ConsoleNotifier
+from notification.pushovernotifier import PushoverNotifier
+from notification.consolenotifier import ConsoleNotifier
+from notification.slacknotifier import SlackNotifier
 from helper import convert_float_to_percentage, get_version
 from currencies.currency import Currency
 
@@ -138,6 +139,14 @@ class Scheduler(object):
                             , title="Create Active Lending")
 
 
+def try_add_notifier(notifier, current_notifiers):
+    if notifier.is_valid_config(config):
+        try:
+            current_notifiers.append(notifier(config))
+        except Exception as e:
+            Logger().logger.error("Error occurred initializing notifier: %s", e)
+
+
 def main():
     Logger().logger.info("Starting Kubot Version {} - "
                          "Config: Correction: {}, Default Interest: {}, Minimum Rate: {}, Charge: {}"
@@ -152,16 +161,11 @@ def main():
         db.create_tables([FundingMarket, ActiveLendOrder, LendingAssets])
 
     # initialize notifier systems
-    notifiers = [
-        ConsoleNotifier(),
-    ]
-
-    # initialize pushover notifier
-    if PushoverNotifier.is_valid_key(config.user_key) and PushoverNotifier.is_valid_key(config.api_token):
-        try:
-            notifiers.append(PushoverNotifier(config.user_key, config.api_token))
-        except Exception as e:
-            Logger().logger.error("Error occurred initializing Pushover notifier: %s", e)
+    notifiers = []
+    try_add_notifier(ConsoleNotifier, notifiers)
+    try_add_notifier(PushoverNotifier, notifiers)
+    try_add_notifier(SlackNotifier, notifiers)
+    Logger().logger.info(f"Configured Notifiers: {[notifier.__class__.__name__ for notifier in notifiers]}")
 
     # initialize configured currencies
     currencies = [Currency(currency) for currency in config.currencies]
