@@ -26,7 +26,7 @@ Lendbot for Kucoin with Grafana Dashboard and Pushover Support
 - *optional*: minimum_rate
   - unset: minimum lending limit would be disabled
 - *optional*: pushover user_key, api_token
-- optional: slack api_token
+- *optional*: slack api_token, channel
 
 # Makefile
 - `make` to list all makefile targets
@@ -56,12 +56,16 @@ Lendbot for Kucoin with Grafana Dashboard and Pushover Support
 
 # Notifiers
 ## Slack
-Go to [slack apps](https://api.slack.com/apps) and create a app in a workspace you own.
-After that go to the `OAuth&Permission` page and add a scope to your app.
-Minimum is `chat:write` (so you can send messages right :)).
-After that you can create a api token. The token starts with `xoxb`.
-Use that and add it to the config.
+1) Go to [slack apps](https://api.slack.com/apps) and create an app in a workspace you own.
+2) Enter the `OAuth & Permission` page and add a scope with `chat:write` permissions to your app.
+3) Create an api token and add into kubot config.
+
 Per default the messages will be posted to the `#general` channel.
-If you would like to post to a different channel add the existing channel name
+If you would like to post to a different channel add an existing channel name
 to the config under `channel`.
+
+## Pushover
+1) Go to [pushover apps](https://pushover.net/) signup and purchase pushover one time payment.
+2) Create Kubot application.
+3) Add user key and created application token into kubot config.
 

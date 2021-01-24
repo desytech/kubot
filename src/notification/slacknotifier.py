@@ -1,13 +1,9 @@
 import re
 import requests
 from notification.notify import Notifier
-from logger import Logger
 
 
 REGEX_SLACK_API_TOKEN = r'^xoxb-\w{13,13}-\w{13,13}-\w{24,24}$'
-
-class ErrInvalidSlackApiToken(Exception):
-    pass
 
 class SlackNotifier(Notifier):
 
@@ -19,11 +15,8 @@ class SlackNotifier(Notifier):
 
     @staticmethod
     def is_valid_config(config):
-        if config.slack_api_token == 'api_token':
-            Logger().logger.warning(f"slack notifier are defaults: {config.slack_api_token}. ignoring...")
-            return False
         if not re.match(REGEX_SLACK_API_TOKEN, config.slack_api_token):
-            raise ErrInvalidSlackApiToken(f"{config.slack_api_token}")
+            return False
         return True
 
     def send_message(self, message, title=None):

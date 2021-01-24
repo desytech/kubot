@@ -140,11 +140,11 @@ class Scheduler(object):
 
 
 def try_add_notifier(notifier, current_notifiers):
-    try:
-        if notifier.is_valid_config(config):
+    if notifier.is_valid_config(config):
+        try:
             current_notifiers.append(notifier(config))
-    except Exception as e:
-        Logger().logger.warning("cannot add notifier: %r", e)
+        except Exception as e:
+            Logger().logger.error("Error occurred initializing notifier: %s", e)
 
 
 def main():
