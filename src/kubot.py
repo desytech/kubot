@@ -28,6 +28,7 @@ class Scheduler(object):
         self.__scheduler = sched.scheduler(time.time, time.sleep)
         self.__minimum_rate = config.minimum_rate
         self.schedule_checks(config.interval)
+        self.schedule_status_push(config.status_interval)
         self.__scheduler.run()
 
     def push_message(self, message, title=None):
@@ -39,6 +40,9 @@ class Scheduler(object):
         FundingMarket.delete().where(FundingMarket.time < time_delta).execute()
         ActiveLendOrder.delete().where(ActiveLendOrder.time < time_delta).execute()
         LendingAssets.delete().where(LendingAssets.time < time_delta).execute()
+
+    def schedule_status_push(self, interval):
+        self.__scheduler.enter(interval, 1, self.schedule_status_push, argument=(interval,))
 
     def schedule_checks(self, interval):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
@@ -76,7 +80,7 @@ class Scheduler(object):
                 else:
                     rate = self.__minimum_rate
                 result = self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
-                self.push_message("Currency: {}, OrderId: {}, Amount: {}, Rate: {}".format(
+                self.push_message("Currency: {}, Amount: {}, Rate: {}".format(
                      currency.name, result['orderId'], available, convert_float_to_percentage(rate)
                 ), title="Create Lend Order")
             else:

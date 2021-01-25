@@ -9,6 +9,7 @@ default_interest = 0.001
 minimum_rate = 0.0005
 charge = 0.00005
 interval = 300
+status_interval = 86400
 currencies = [{"currency": "USDT", "term": 28, "reserved_amount": 10}]
 
 [pushover]
