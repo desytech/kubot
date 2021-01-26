@@ -75,7 +75,7 @@ class Scheduler(object):
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
                     rate = self.__minimum_rate
-                result = self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
+                self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
                 self.push_message("Currency: {}, Amount: {}, Rate: {}".format(
                      currency.name, available, convert_float_to_percentage(rate)
                 ), title="Create Lend Order")
