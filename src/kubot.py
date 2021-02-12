@@ -117,7 +117,12 @@ class Scheduler(object):
             return config.default_interest
 
     def check_active_lendings(self, currency):
-        active_list = self.__client.get_active_list(pageSize=50, currency=currency.name)
+        current_page = 1
+        page_size = 50
+        active_list = self.__client.get_active_list(pageSize=page_size, currency=currency.name, currentPage=current_page)
+        for page in range(current_page + 1, active_list['totalPage'] + 1):
+            result = self.__client.get_active_list(pageSize=page_size, currency=currency.name, currentPage=page)
+            active_list['items'].extend(result['items'])
         if active_list:
             if 'items' in active_list:
                 active_order = ActiveLendOrder(currency=currency.name, items=active_list['items'])
