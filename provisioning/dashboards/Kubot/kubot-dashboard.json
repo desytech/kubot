@@ -437,7 +437,7 @@
       "hiddenSeries": false,
       "id": 14,
       "legend": {
-        "avg": true,
+        "avg": false,
         "current": true,
         "max": true,
         "min": true,
@@ -807,5 +807,5 @@
   "timezone": "",
   "title": "Overview",
   "uid": "uXWL7HaGk",
-  "version": 21
+  "version": 23
 }
