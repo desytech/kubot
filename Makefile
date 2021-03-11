@@ -25,7 +25,7 @@ build-dev: ## build kubot development docker image
 	docker build --target development --tag ${image}:${version} .
 	docker image prune -f
 
-compose-dev: build-dev ## compose and start kubot suite in development mode
+compose-dev: ## compose and start kubot suite in development mode
 	KUBOT_IMAGE=${image} KUBOT_VERSION=${version} docker-compose up -d
 
 development: ## start kubot database and gui
