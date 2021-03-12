@@ -67,6 +67,7 @@ class Scheduler(object):
 
     def lend_loans(self, min_int_rate, currency):
         account_list = self.__user.get_account_list(currency.name, 'main')
+        account_list = account_list['data'] if 'data' in account_list else account_list
         account = next((x for x in account_list if x['currency'] == currency.name), None)
         if account:
             available = int(float(account['available'])) - currency.reserved_amount
