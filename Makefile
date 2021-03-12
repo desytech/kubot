@@ -1,6 +1,6 @@
 
 image := kubot
-version := 2.3
+version := 2.4
 image_file := ${image}_${version}.tar.gz
 
 doc: ## build documentation
