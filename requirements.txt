@@ -4,7 +4,7 @@ chardet==3.0.4
 contextlib2==0.6.0.post1
 idna==2.10
 iniconfig==1.1.1
-kucoin-python==1.0.4
+kucoin-python==1.0.6
 markdown2==2.3.10
 packaging==20.7
 peewee==3.14.0
