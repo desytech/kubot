@@ -13,6 +13,7 @@ Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
 # Configuration
 
 - **kucoin:  api_key, api_secret, api_passphrase**
+  - only kucoin api key v2 supported
 - **correction**:
   - funding market variation limit
 - **default_interest**:

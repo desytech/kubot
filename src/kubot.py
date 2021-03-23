@@ -71,6 +71,7 @@ class Scheduler(object):
 
     def lend_loans(self, min_int_rate, currency):
         account_list = self.__user.get_account_list(currency.name, 'main')
+        account_list = account_list['data'] if 'data' in account_list else account_list
         account = next((x for x in account_list if x['currency'] == currency.name), None)
         if account:
             available = int(float(account['available'])) - currency.reserved_amount
@@ -79,9 +80,9 @@ class Scheduler(object):
                     rate = float(format(min_int_rate + config.charge, '.5f'))
                 else:
                     rate = self.__minimum_rate
-                result = self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
+                self.__client.create_lend_order(currency.name, str(available), str(rate), currency.term)
                 self.push_message("Currency: {}, Amount: {}, Rate: {}".format(
-                     currency.name, result['orderId'], available, convert_float_to_percentage(rate)
+                     currency.name, available, convert_float_to_percentage(rate)
                 ), title="Create Lend Order")
             else:
                 Logger().logger.info("Insufficient Amount on %s Main Account: %s. Reserved Amount: %s", currency.name, str(available), str(currency.reserved_amount))
@@ -121,7 +122,12 @@ class Scheduler(object):
             return config.default_interest
 
     def check_active_lendings(self, currency):
-        active_list = self.__client.get_active_list(pageSize=50, currency=currency.name)
+        current_page = 1
+        page_size = 50
+        active_list = self.__client.get_active_list(pageSize=page_size, currency=currency.name, currentPage=current_page)
+        for page in range(current_page + 1, active_list['totalPage'] + 1):
+            result = self.__client.get_active_list(pageSize=page_size, currency=currency.name, currentPage=page)
+            active_list['items'].extend(result['items'])
         if active_list:
             if 'items' in active_list:
                 active_order = ActiveLendOrder(currency=currency.name, items=active_list['items'])
