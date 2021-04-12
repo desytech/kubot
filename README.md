@@ -1,5 +1,5 @@
-# Kubot <img src="./resources/logo.png" width="50" height="50">
-Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
+# Kubot
+<img src="./resources/logo.png" width="50" height="50"> Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
 
 ![Kubot](https://github.com/desy83/kubot/workflows/Kubot/badge.svg)
 
