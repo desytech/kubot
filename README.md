@@ -1,5 +1,8 @@
 # Kubot
-<img src="./resources/logo.png" width="50" height="50"> Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
+<p>
+<img src="./resources/logo.png" width="50" height="50" alt="kubot">
+Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
+</p>
 
 ![Kubot](https://github.com/desy83/kubot/workflows/Kubot/badge.svg)
 
@@ -42,6 +45,7 @@
 # Build
 - Production: `make build`
 - Development: `make build-dev`
+
 
 # Developement
 - `make venv`
