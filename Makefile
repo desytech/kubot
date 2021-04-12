@@ -11,7 +11,7 @@ build: doc ## build kubot production tarball
 	docker build --target production --tag ${image}:${version} .
 	docker image prune -f
 	docker save ${image}:${version} | gzip > ${image_file}
-	tar --exclude=__pycache__ -cvzf ${image}_${version}_suite.tar.gz ${image_file} Makefile README.html config/config.demo provisioning docker-compose.yml
+	tar --exclude=__pycache__ -cvzf ${image}_${version}_suite.tar.gz ${image_file} Makefile README.html config/config.demo provisioning resources docker-compose.yml
 	rm -rf README.html ${image_file}
 
 compose: ## compose and start kubot suite
