@@ -44,6 +44,8 @@ Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
 
 # Build
 - Production: `make build`
+    - Environment Variables:
+      - TARGETPLATFORM: [*linux/amd64*, *linux/arm/v7*]
 - Development: `make build-dev`
 
 
