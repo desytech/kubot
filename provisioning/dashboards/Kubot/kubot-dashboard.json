@@ -35,7 +35,7 @@
               }
             ]
           },
-          "unit": "currencyUSD"
+          "unit": "none"
         },
         "overrides": []
       },
@@ -807,5 +807,5 @@
   "timezone": "",
   "title": "Overview",
   "uid": "uXWL7HaGk",
-  "version": 23
+  "version": 25
 }
