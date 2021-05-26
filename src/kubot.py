@@ -159,7 +159,7 @@ def main():
                          .format(get_version(),
                                  convert_float_to_percentage(config.correction),
                                  convert_float_to_percentage(config.default_interest),
-                                 convert_float_to_percentage(config.minimum_rate),
+                                 'disabled' if config.minimum_rate == const.DEFAULT_MIN_RATE else convert_float_to_percentage(config.minimum_rate),
                                  convert_float_to_percentage(config.charge)))
 
     # initialize database
