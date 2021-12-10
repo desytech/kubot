@@ -4,12 +4,13 @@ datasources:
     type: postgres
     access: proxy
     url: postgres:5432
-    password: kubot
     user: kubot
     database: kubot
     basicAuth: false
     jsonData:
       sslmode: disable
       postgresVersion: 1200
+    secureJsonData:
+      password: kubot
     editable: true
     isDefault: true
