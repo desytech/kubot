@@ -4,7 +4,7 @@
 Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
 </p>
 
-![Kubot](https://github.com/desy83/kubot/workflows/Kubot/badge.svg)
+![Kubot](https://github.com/desytech/kubot/workflows/Kubot/badge.svg)
 
 # Requirements
 - Runtime: Make, Docker, Docker Compose
