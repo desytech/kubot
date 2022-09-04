@@ -8,7 +8,7 @@ Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
 
 # Requirements
 - Runtime: Make, Docker, Docker Compose
-- Development: Python3
+- Development: Python3, openssl (brew)
 
 # Preparation
 - copy `config/config.demo` to `config/config`

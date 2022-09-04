@@ -46,8 +46,8 @@ venv: ## bootstrap python3 venv
 
 install: venv ## install kubot dependencies
 	@source venv/bin/activate; \
-	pip install --upgrade pip; \
-	pip install -r requirements.txt;
+	pip install --upgrade pip setuptools==57.5.0; \
+	LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/opt/openssl/lib pip install -r requirements.txt;
 
 test: venv ## run pytest suite
 	@source venv/bin/activate; PYTHONPATH=`pwd`/src pytest
