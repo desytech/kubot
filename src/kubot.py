@@ -45,16 +45,17 @@ class Scheduler(object):
         self.cleanup_database()
         for currency in self.__currencies:
             try:
-                min_int_rate = self.get_min_daily_interest_rate(currency)
-                min_int_rate_charge = float(format(min_int_rate + config.charge, '.5f'))
-                if min_int_rate_charge <= config.minimum_rate:
-                    self.__minimum_rate = config.minimum_rate
-                elif self.__minimum_rate == const.DEFAULT_MIN_RATE or abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
-                    self.__minimum_rate = min_int_rate_charge
-                self.get_lending_assets(currency)
-                self.check_active_loans(min_int_rate, currency)
-                self.lend_loans(min_int_rate, currency)
-                self.check_active_lendings(currency)
+                # min_int_rate = self.get_min_daily_interest_rate(currency)
+                # min_int_rate_charge = float(format(min_int_rate + config.charge, '.5f'))
+                # if min_int_rate_charge <= config.minimum_rate:
+                #     self.__minimum_rate = config.minimum_rate
+                # elif self.__minimum_rate == const.DEFAULT_MIN_RATE or abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
+                #     self.__minimum_rate = min_int_rate_charge
+                # self.get_lending_assets(currency)
+                # self.check_active_loans(min_int_rate, currency)
+                # self.lend_loans(min_int_rate, currency)
+                # self.check_active_lendings(currency)
+                self.check_ledger(currency)
             except (socket.timeout, requests.exceptions.Timeout) as e:
                 Logger().logger.error("Currency: %s, Transport Exception occurred: %s", currency.name, e)
             except Exception as e:
@@ -117,6 +118,15 @@ class Scheduler(object):
         else:
             return config.default_interest
 
+    def check_ledger(self, currency):
+        current_page = 1
+        page_size = 50
+        active_list = self.__user.get_account_ledger(pageSize=page_size, currency=currency.name, currentPage=current_page)
+        for page in range(current_page + 1, active_list['totalPage'] + 1):
+            result = self.__user.get_account_ledger(pageSize=page_size, currency=currency.name, currentPage=page)
+            active_list['items'].extend(result['items'])
+        print(active_list)
+
     def check_active_lendings(self, currency):
         current_page = 1
         page_size = 50
@@ -163,8 +173,8 @@ def main():
                                  convert_float_to_percentage(config.charge)))
 
     # initialize database
-    with db:
-        db.create_tables([FundingMarket, ActiveLendOrder, LendingAssets])
+    # with db:
+    #     db.create_tables([FundingMarket, ActiveLendOrder, LendingAssets])
 
     # initialize notifier systems
     notifiers = []
