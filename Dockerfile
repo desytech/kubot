@@ -1,8 +1,8 @@
-FROM python:3.8-alpine as base
+FROM python:3.13-alpine as base
 
 RUN pip install --upgrade pip
 
-RUN apk --update add gcc musl-dev postgresql-dev
+RUN apk --update add gcc musl-dev postgresql-dev git
 
 COPY . /app
 WORKDIR /app
