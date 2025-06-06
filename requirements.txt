@@ -5,7 +5,7 @@ charset-normalizer==3.4.0
 contextlib2==0.6.0.post1
 idna==2.10
 iniconfig==1.1.1
-kucoin-python==1.0.25
+kucoin-python @ git+https://github.com/desytech/kucoin-python-sdk.git@master
 markdown2==2.3.10
 packaging==20.7
 peewee==3.14.0

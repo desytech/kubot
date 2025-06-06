@@ -31,6 +31,10 @@ Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
   - kubot run interval in seconds
 - **currencies**
   - currency specific settings
+- **mode**:
+  - bot running mode either dual investment (DUAL) or lending (LENDING)
+- **symbols**:
+  - dual investment symbols to track
 - *optional*: minimum_rate
   - unset: minimum lending limit would be disabled
 - *optional*: pushover user_key, api_token

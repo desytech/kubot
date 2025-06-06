@@ -4,8 +4,8 @@ import json
 from configparser import ConfigParser, ExtendedInterpolation
 
 import const
-from schemas.config import currencies as currencies_schema
-
+from schemas.config import currencies as currencies_schema, symbols as symbols_schema, modes as modes_schema
+from schemas.static import Modes
 
 def property_wrapper(default=None):
     def inner_decorator(f):
@@ -95,6 +95,18 @@ class Config(object):
     @property_wrapper(default='general')
     def slack_channel(self):
         return self.__config['slack'].get('channel')
+
+    @property
+    @property_wrapper(default=Modes.LENDING)
+    def mode(self):
+        modes = Modes(self.__config['bot'].get('mode'))
+        return modes_schema.validate(modes)
+
+    @property
+    @property_wrapper(default=[])
+    def symbols(self):
+        symbols = json.loads(self.__config['bot'].get('symbols'))
+        return symbols_schema.validate(symbols)
 
 
 config = Config()
