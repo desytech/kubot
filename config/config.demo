@@ -11,6 +11,7 @@ charge = 0.00005
 interval = 300
 currencies = [{"currency": "USDT", "term": 28, "reserved_amount": 10}]
 symbols = ["ETH-USDT", "ETH-BTC"]
+category_currency = ["DUAL"]
 mode = DUAL
 
 [pushover]
