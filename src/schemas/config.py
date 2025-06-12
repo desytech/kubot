@@ -1,5 +1,5 @@
 from schema import Schema, Or, And
-from .static import Modes
+from .static import Modes, CategoryCurrencyEnum
 
 currencies = Schema([
     {
@@ -16,3 +16,7 @@ symbols = Schema([
 modes = Schema(
     Or(Modes.DUAL, Modes.LENDING)
 )
+
+category_currency = Schema([
+    Or(CategoryCurrencyEnum.DUAL.value)
+])

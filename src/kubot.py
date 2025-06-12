@@ -4,6 +4,7 @@ import requests
 
 import const
 from database.models.base import db
+from database.models.category import CategoryCurrency
 from database.models.market import FundingMarket
 from database.models.activeorder import ActiveLendOrder
 from database.models.assets import LendingAssets
@@ -66,6 +67,7 @@ class Scheduler(object):
                 case Modes.DUAL:
                     self.check_ledger()
                     self.check_symbol_trigger()
+                    self.check_dual_investments()
         except (socket.timeout, requests.exceptions.Timeout) as e:
             Logger().logger.error("Transport Exception occurred: %s", e)
         except Exception as e:
@@ -144,6 +146,12 @@ class Scheduler(object):
             symbol_asset = SymbolAssets(symbol=result)
             Logger().logger.info('%s rows saved into the %s symbols table', symbol_asset.save(), symbol)
 
+    def check_dual_investments(self):
+        for category in config.category_currency:
+            result = self.__user_public.get_category_currency(category=category)
+            category_currency = CategoryCurrency(category=category, items=result)
+            Logger().logger.info('%s rows saved into %s category currency table', category_currency.save(), category)
+
     def check_active_lendings(self, currency):
         current_page = 1
         page_size = 50
@@ -193,7 +201,7 @@ def main():
 
     # initialize database
     with db:
-        db.create_tables([FundingMarket, ActiveLendOrder, LendingAssets, LedgerAssets, SymbolAssets])
+        db.create_tables([FundingMarket, ActiveLendOrder, LendingAssets, LedgerAssets, SymbolAssets, CategoryCurrency])
 
     # initialize notifier systems
     notifiers = []
