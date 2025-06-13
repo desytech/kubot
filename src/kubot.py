@@ -46,6 +46,7 @@ class Scheduler(object):
         LendingAssets.delete().where(LendingAssets.time < time_delta).execute()
         LedgerAssets.delete().where(LedgerAssets.time < time_delta).execute()
         SymbolAssets.delete().where(SymbolAssets.time < time_delta).execute()
+        CategoryCurrency.delete().where(CategoryCurrency.time < time_delta).execute()
 
     def schedule_checks(self, interval):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
