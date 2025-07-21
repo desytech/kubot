@@ -26,45 +26,21 @@
   "graphTooltip": 0,
   "id": 3,
   "links": [],
+  "liveNow": false,
   "panels": [
     {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "P0689FA73A582FCBA"
-      },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 64,
-            "gradientMode": "hue",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -73,112 +49,66 @@
             ]
           }
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "annualrate"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "strikeprice"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "left"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "annualrate"
-            },
-            "properties": []
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
-        "w": 24,
+        "w": 12,
         "x": 0,
         "y": 0
       },
-      "id": 3,
+      "id": 6,
       "options": {
-        "barRadius": 0,
-        "barWidth": 1,
-        "colorByField": "Time",
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
         "orientation": "auto",
-        "showValue": "auto",
-        "stacking": "normal",
-        "text": {},
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
-        "xField": "Time",
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 200
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
-      "pluginVersion": "12.0.1",
+      "pluginVersion": "8.3.1",
       "targets": [
         {
           "datasource": {
-            "type": "grafana-postgresql-datasource",
+            "type": "postgres",
             "uid": "P0689FA73A582FCBA"
           },
-          "editorMode": "code",
           "format": "time_series",
-          "hide": false,
+          "group": [],
+          "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n    time as \"time\",\n    ((product ->> 'strikePrice')::numeric) AS strikePrice,\n    ((product ->> 'annualRate')::numeric * 100) AS annualRate\nFROM\n    categorycurrency,\n    json_array_elements(items) AS outer_entry,\n    json_array_elements(outer_entry -> 'classicSeriesInfo') AS series,\n    json_array_elements(series -> 'productList') AS product\nWHERE\n    outer_entry ->> 'currency' = 'ETH' and ((product ->> 'duration')::numeric) = 1 and ((product ->> 'strikePrice')::numeric) > 1 and ((product ->> 'seriesNames')) = 'ETH-U' order by 1;",
+          "rawSql": "SELECT\n    time,\n    (item ->> 'amount') AS amount,\n    COUNT(*) AS occurrences\nFROM\n    ledgerassets t,\n    LATERAL json_array_elements(t.ledger -> 'items') AS item\nWHERE\n    item ->> 'direction' = 'in'\nGROUP BY\n   time, amount\norder by 1;",
           "refId": "A",
-          "sql": {
-            "columns": [
+          "select": [
+            [
               {
-                "parameters": [],
-                "type": "function"
+                "params": [
+                  "value"
+                ],
+                "type": "column"
               }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
+            ]
+          ],
+          "table": "ledgerassets",
+          "timeColumn": "time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
         }
       ],
-      "title": "ETH Dual Investment",
-      "type": "barchart"
+      "title": "Panel Title",
+      "type": "gauge"
     },
     {
-      "datasource": {
-        "type": "postgres",
-        "uid": "P0689FA73A582FCBA"
-      },
       "description": "ETH-USDT Last Traded Price",
       "fieldConfig": {
         "defaults": {
@@ -186,13 +116,9 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
-            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -201,7 +127,6 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -218,19 +143,23 @@
               "mode": "off"
             }
           },
+          "decimals": 2,
+          "displayName": "ETH-USDT",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": [
           {
@@ -240,7 +169,7 @@
               "options": {
                 "mode": "exclude",
                 "names": [
-                  "lasttradedprice"
+                  "ETH-USDT"
                 ],
                 "prefix": "All except:",
                 "readOnly": true
@@ -260,10 +189,10 @@
         ]
       },
       "gridPos": {
-        "h": 10,
+        "h": 18,
         "w": 12,
-        "x": 0,
-        "y": 8
+        "x": 12,
+        "y": 0
       },
       "id": 2,
       "options": {
@@ -322,24 +251,177 @@
           ]
         }
       ],
-      "title": "Last Traded Price",
+      "title": "Last Traded Price ETH - USDT",
+      "type": "timeseries"
+    },
+    {
+      "description": "Interest over ETH and USDT",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "right",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amount ETH"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "left"
+              },
+              {
+                "id": "displayName",
+                "value": "Amount ETH"
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "ETH"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amount USDT"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Amount USDT"
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "USDT"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "P0689FA73A582FCBA"
+          },
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n    time as \"time\",\n    ((item->>'amount')::float) as amount,\n    ((item->>'currency')) as currency\nFROM\n    ledgerassets t,\n    LATERAL json_array_elements(t.ledger -> 'items') AS item\nWHERE\n    (item ->> 'direction' = 'in')\nGROUP BY\n    item ->> 'id', amount, time, currency\nORDER BY 1;\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Profit USDT / ETH",
       "type": "timeseries"
     }
   ],
-  "preload": false,
   "refresh": "",
-  "schemaVersion": 41,
+  "schemaVersion": 33,
+  "style": "dark",
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-30d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Dual Investment",
   "uid": "heg0onYNk",
-  "version": 9
+  "version": 16,
+  "weekStart": ""
 }
