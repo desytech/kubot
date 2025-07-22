@@ -1,12 +1,13 @@
 # Kubot
 <p>
 <img src="./resources/logo.png" width="50" height="50" alt="kubot">
-Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
+Earnbot for Kucoin (Lending Pro and Dual Investment) with Grafana Dashboard, Pushover and Slack Support
 </p>
 
 ![Kubot](https://github.com/desytech/kubot/workflows/Kubot/badge.svg)
 
 <p>
+<img width="600" src="https://github.com/user-attachments/assets/cbbbd986-060b-48fb-abf2-0d22d52c1391" />
 <img width="600" src="https://user-images.githubusercontent.com/11294106/107029215-f78b3d00-67ae-11eb-8c91-4ef4d0211638.png" />
 </p>
 
@@ -21,6 +22,9 @@ Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
 
 - **kucoin:  api_key, api_secret, api_passphrase**
   - only kucoin api key v2 supported
+- **mode**
+  - `DUAL` or `LENDING`
+#### Crypto Lending Pro
 - **correction**:
   - funding market variation limit
 - **default_interest**:
@@ -35,6 +39,11 @@ Lendbot for Kucoin with Grafana Dashboard, Pushover and Slack Support
   - unset: minimum lending limit would be disabled
 - *optional*: pushover user_key, api_token
 - *optional*: slack api_token, channel
+#### Dual Investment
+- **category_currency**
+  -  internal category currency checkup
+- **symbols**
+  -  symbol pairs which be stored
 
 # Makefile
 - `make` to list all makefile targets
