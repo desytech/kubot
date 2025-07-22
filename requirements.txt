@@ -9,13 +9,13 @@ kucoin-python @ git+https://github.com/desytech/kucoin-python-sdk.git@master
 markdown2==2.3.10
 packaging==20.7
 peewee==3.14.0
-pluggy==0.13.1
+pluggy==1.6.0
 psycopg2-binary==2.9.10
 pushover @ git+https://github.com/Wyattjoh/pushover@5852545c5b9cf2717e1eafc4c8b134a08b0994da
-py==1.9.0
 pyarmor==6.6.0
+Pygments==2.19.2
 pyparsing==2.4.7
-pytest==6.1.2
+pytest==8.4.1
 requests==2.32.3
 schema==0.7.2
 toml==0.10.2
