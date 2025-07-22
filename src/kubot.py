@@ -4,11 +4,15 @@ import requests
 
 import const
 from database.models.base import db
+from database.models.category import CategoryCurrency
 from database.models.market import FundingMarket
 from database.models.activeorder import ActiveLendOrder
 from database.models.assets import LendingAssets
+from database.models.ledger import LedgerAssets
+from database.models.symbols import SymbolAssets
 from kucoin.client import Margin, User
 from config.config import config
+from schemas.static import Modes
 from logger import Logger
 from datetime import datetime, timedelta
 from notification.pushovernotifier import PushoverNotifier
@@ -20,9 +24,10 @@ from currencies.currency import Currency
 
 class Scheduler(object):
 
-    def __init__(self, notifiers, currencies):
+    def __init__(self, notifiers, currencies, mode):
         self.__client = Margin(config.api_key, config.api_secret, config.api_passphrase)
         self.__user = User(config.api_key, config.api_secret, config.api_passphrase)
+        self.__user_public = User(config.api_key, config.api_secret, config.api_passphrase, "https://www.kucoin.com")
         self.__notifiers = notifiers
         self.__currencies = currencies
         self.__scheduler = sched.scheduler(time.time, time.sleep)
@@ -39,26 +44,35 @@ class Scheduler(object):
         FundingMarket.delete().where(FundingMarket.time < time_delta).execute()
         ActiveLendOrder.delete().where(ActiveLendOrder.time < time_delta).execute()
         LendingAssets.delete().where(LendingAssets.time < time_delta).execute()
+        LedgerAssets.delete().where(LedgerAssets.time < time_delta).execute()
+        SymbolAssets.delete().where(SymbolAssets.time < time_delta).execute()
+        CategoryCurrency.delete().where(CategoryCurrency.time < time_delta).execute()
 
     def schedule_checks(self, interval):
         self.__scheduler.enter(interval, 1, self.schedule_checks, argument=(interval,))
         self.cleanup_database()
-        for currency in self.__currencies:
-            try:
-                min_int_rate = self.get_min_daily_interest_rate(currency)
-                min_int_rate_charge = float(format(min_int_rate + config.charge, '.5f'))
-                if min_int_rate_charge <= config.minimum_rate:
-                    self.__minimum_rate = config.minimum_rate
-                elif self.__minimum_rate == const.DEFAULT_MIN_RATE or abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
-                    self.__minimum_rate = min_int_rate_charge
-                self.get_lending_assets(currency)
-                self.check_active_loans(min_int_rate, currency)
-                self.lend_loans(min_int_rate, currency)
-                self.check_active_lendings(currency)
-            except (socket.timeout, requests.exceptions.Timeout) as e:
-                Logger().logger.error("Currency: %s, Transport Exception occurred: %s", currency.name, e)
-            except Exception as e:
-                Logger().logger.error("Currency: %s, Generic Error occurred: %s", currency.name, e)
+        try:
+            match config.mode:
+                case Modes.LENDING:
+                    for currency in self.__currencies:
+                        min_int_rate = self.get_min_daily_interest_rate(currency)
+                        min_int_rate_charge = float(format(min_int_rate + config.charge, '.5f'))
+                        if min_int_rate_charge <= config.minimum_rate:
+                            self.__minimum_rate = config.minimum_rate
+                        elif self.__minimum_rate == const.DEFAULT_MIN_RATE or abs(min_int_rate_charge - self.__minimum_rate) >= config.correction:
+                            self.__minimum_rate = min_int_rate_charge
+                        self.get_lending_assets(currency)
+                        self.check_active_loans(min_int_rate, currency)
+                        self.lend_loans(min_int_rate, currency)
+                        self.check_active_lendings(currency)
+                case Modes.DUAL:
+                    self.check_ledger()
+                    self.check_symbol_trigger()
+                    self.check_dual_investments()
+        except (socket.timeout, requests.exceptions.Timeout) as e:
+            Logger().logger.error("Transport Exception occurred: %s", e)
+        except Exception as e:
+            Logger().logger.error("Generic Error occurred: %s", e)
 
     def get_lending_assets(self, currency):
         asset = self.__client.get_lend_record(currency=currency.name)
@@ -117,6 +131,28 @@ class Scheduler(object):
         else:
             return config.default_interest
 
+    def check_ledger(self):
+        current_page = 1
+        page_size = 50
+        ledger = self.__user.get_account_ledger(pageSize=page_size, currentPage=current_page)
+        for page in range(current_page + 1, ledger['totalPage'] + 1):
+            result = self.__user.get_account_ledger(pageSize=page_size, currentPage=page)
+            ledger['items'].extend(result['items'])
+        ledger_asset = LedgerAssets(ledger=ledger)
+        Logger().logger.info('%s rows saved into the ledger table', ledger_asset.save())
+
+    def check_symbol_trigger(self):
+        for symbol in config.symbols:
+            result = self.__user_public.get_symbol_ticks(symbols=symbol)[0]
+            symbol_asset = SymbolAssets(symbol=result)
+            Logger().logger.info('%s rows saved into the %s symbols table', symbol_asset.save(), symbol)
+
+    def check_dual_investments(self):
+        for category in config.category_currency:
+            result = self.__user_public.get_category_currency(category=category)
+            category_currency = CategoryCurrency(category=category, items=result)
+            Logger().logger.info('%s rows saved into %s category currency table', category_currency.save(), category)
+
     def check_active_lendings(self, currency):
         current_page = 1
         page_size = 50
@@ -155,16 +191,18 @@ def try_add_notifier(notifier, current_notifiers):
 
 def main():
     Logger().logger.info("Starting Kubot Version {} - "
-                         "Config: Correction: {}, Default Interest: {}, Minimum Rate: {}, Charge: {}"
+                         "Config: Mode: {}, Correction: {}, Default Interest: {}, Minimum Rate: {}, Charge: {}, Symbols: {}"
                          .format(get_version(),
+                                 config.mode.value,
                                  convert_float_to_percentage(config.correction),
                                  convert_float_to_percentage(config.default_interest),
                                  'disabled' if config.minimum_rate == const.DEFAULT_MIN_RATE else convert_float_to_percentage(config.minimum_rate),
-                                 convert_float_to_percentage(config.charge)))
+                                 convert_float_to_percentage(config.charge),
+                                 config.symbols))
 
     # initialize database
     with db:
-        db.create_tables([FundingMarket, ActiveLendOrder, LendingAssets])
+        db.create_tables([FundingMarket, ActiveLendOrder, LendingAssets, LedgerAssets, SymbolAssets, CategoryCurrency])
 
     # initialize notifier systems
     notifiers = []
@@ -177,7 +215,7 @@ def main():
     currencies = [Currency(currency) for currency in config.currencies]
 
     # start main scheduler process
-    Scheduler(notifiers=notifiers, currencies=currencies)
+    Scheduler(notifiers=notifiers, currencies=currencies, mode=config.mode)
 
 
 if __name__ == "__main__":

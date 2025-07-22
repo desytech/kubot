@@ -33,8 +33,13 @@ services:
     restart: on-failure:10
     depends_on:
       - postgres
+    environment:
+      - GF_SERVER_PROTOCOL=https
+      - GF_SERVER_CERT_FILE=/etc/grafana/certs/grafana.crt
+      - GF_SERVER_CERT_KEY=/etc/grafana/certs/grafana.key
     volumes:
       - grafana-storage:/var/lib/grafana
+      - ./certs:/etc/grafana/certs:ro
       - ./provisioning:/etc/grafana/provisioning
     ports:
       - 3000:3000

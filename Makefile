@@ -27,10 +27,10 @@ build-dev: ## build kubot development docker image
 	docker build --target development --tag ${image}:${version} .
 	docker image prune -f
 
-compose-dev: ## compose and start kubot suite in development mode
+compose-dev: gen-certs ## compose and start kubot suite in development mode
 	KUBOT_IMAGE=${image} KUBOT_VERSION=${version} docker-compose up -d
 
-development: ## start kubot database and gui
+development: gen-certs ## start kubot database and gui
 	KUBOT_IMAGE=${image} KUBOT_VERSION=${version} docker-compose up -d postgres grafana
 
 run-d: ## run kubot docker image detached
@@ -44,9 +44,13 @@ run: ## run kubot docker image attached
 venv: ## bootstrap python3 venv
 	@test -d "venv" || python3 -m venv venv
 
+gen-certs: ## generate grafana certs
+	@mkdir -p certs
+	@openssl req -x509 -newkey rsa:2048 -keyout certs/grafana.key -out certs/grafana.crt -days 365 -nodes -subj "/CN=localhost"
+
 install: venv ## install kubot dependencies
 	@source venv/bin/activate; \
-	pip install --upgrade pip setuptools==57.5.0; \
+	pip install --upgrade pip setuptools==75.6.0; \
 	LIBRARY_PATH=$LIBRARY_PATH:/opt/homebrew/opt/openssl/lib pip install -r requirements.txt;
 
 test: venv ## run pytest suite
