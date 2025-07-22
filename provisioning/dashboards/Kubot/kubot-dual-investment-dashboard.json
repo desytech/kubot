@@ -32,6 +32,250 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "Total Interest\n",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "decimals": 2,
+          "displayName": "USDT",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "id": 8,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P0689FA73A582FCBA"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "WITH daily_sum_usdt AS (\n    SELECT\n      ((item ->> 'createdAt')::numeric) as createdAt,\n      ((item ->> 'amount')::numeric) AS amount\n    FROM\n        ledgerassets t,\n        LATERAL json_array_elements(t.ledger -> 'items') AS item\n    WHERE\n        item ->> 'direction' = 'in'\n        AND item ->> 'currency' = 'USDT'\n    GROUP BY\n        createdAt, amount\n),\nsummarized_amounts AS (\n    SELECT\n        createdAt as \"time\",\n\n        amount - LEAD(amount) OVER (ORDER BY createdAt DESC) AS diff_with_next_day\n    FROM\n        daily_sum_usdt\n    ORDER BY\n        time DESC\n)\n\nselect sum(diff_with_next_day) as sum_usdt from summarized_amounts;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P0689FA73A582FCBA"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "WITH daily_sum AS (\n    SELECT\n      to_timestamp(((item ->> 'createdAt')::numeric) / 1000) as createdAt,\n      ((item ->> 'amount')::numeric) AS amount\n    FROM\n        ledgerassets t,\n        LATERAL json_array_elements(t.ledger -> 'items') AS item\n    WHERE\n        item ->> 'direction' = 'in'\n        AND item ->> 'currency' = 'ETH'\n    GROUP BY\n        createdAt, amount\n),\nsummarized_amounts_eth AS (\n  SELECT\n      createdAt as \"time\",\n      ((amount - LEAD(amount) OVER (ORDER BY createdAt DESC)) * l2.lastTradedPrice) AS diff_with_next_day\n  FROM\n      daily_sum\n  JOIN LATERAL (select ((symbol->>'lastTradedPrice')::float) as lastTradedPrice from symbolassets as l2 where symbol->>'symbolCode' = 'ETH-USDT' order by ABS(EXTRACT(EPOCH FROM (daily_sum.createdAt - l2.time))) asc limit 1) as l2 on true\n  GROUP BY daily_sum.createdAt, daily_sum.amount, l2.lastTradedPrice\n  order by\n      daily_sum.createdAt DESC\n)\nselect sum(diff_with_next_day) as sum_eth from summarized_amounts_eth;",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Total Interest",
+      "transformations": [
+        {
+          "id": "concatenate",
+          "options": {}
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "interest",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "sum_usdt"
+                }
+              },
+              "operator": "+",
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "sum_eth"
+                }
+              }
+            },
+            "cumulative": {
+              "field": "sum_usdt",
+              "reducer": "sum"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": true
+          }
+        }
+      ],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "description": "Profit ETH\n",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 1,
+            "spanNulls": false
+          },
+          "decimals": 2,
+          "displayName": "USDT",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 20,
+        "x": 4,
+        "y": 0
+      },
+      "id": 7,
+      "options": {
+        "alignValue": "center",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 0.86,
+        "showValue": "auto",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P0689FA73A582FCBA"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "WITH daily_sum AS (\n    SELECT\n      to_timestamp(((item ->> 'createdAt')::numeric) / 1000) as createdAt,\n      ((item ->> 'amount')::numeric) AS amount\n    FROM\n        ledgerassets t,\n        LATERAL json_array_elements(t.ledger -> 'items') AS item\n    WHERE\n        item ->> 'direction' = 'in'\n        AND item ->> 'currency' = 'ETH'\n    GROUP BY\n        createdAt, amount\n)\n\nSELECT\n    createdAt as \"time\",\n    ((amount - LEAD(amount) OVER (ORDER BY createdAt DESC)) * l2.lastTradedPrice) AS diff_with_next_day\nFROM\n    daily_sum\nJOIN LATERAL (select ((symbol->>'lastTradedPrice')::float) as lastTradedPrice from symbolassets as l2 where symbol->>'symbolCode' = 'ETH-USDT' order by ABS(EXTRACT(EPOCH FROM (daily_sum.createdAt - l2.time))) asc limit 1) as l2 on true\nGROUP BY daily_sum.createdAt, daily_sum.amount, l2.lastTradedPrice\norder by\n    daily_sum.createdAt DESC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Profit ETH",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
       "description": "Profit USDT\n",
       "fieldConfig": {
         "defaults": {
@@ -67,9 +311,9 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 24,
-        "x": 0,
-        "y": 0
+        "w": 20,
+        "x": 4,
+        "y": 5
       },
       "id": 6,
       "options": {
@@ -234,7 +478,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 5
+        "y": 10
       },
       "id": 4,
       "options": {
@@ -396,7 +640,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 5
+        "y": 10
       },
       "id": 2,
       "options": {
@@ -419,6 +663,7 @@
             "type": "postgres",
             "uid": "P0689FA73A582FCBA"
           },
+          "editorMode": "code",
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -443,6 +688,23 @@
               }
             ]
           ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
           "table": "symbolassets",
           "timeColumn": "time",
           "timeColumnType": "timestamp",
@@ -467,12 +729,12 @@
     "list": []
   },
   "time": {
-    "from": "now-30d",
+    "from": "now-40d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Dual Investment",
   "uid": "heg0onYNk",
-  "version": 24
+  "version": 40
 }
